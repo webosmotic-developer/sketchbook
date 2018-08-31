@@ -1,0 +1,13 @@
+<div id="sketchbook" class="row h-100 sketchbook" ng-init="fnCreate()">
+    <div class="col-md-9 p-0 h-100">
+        <ul class="nav nav-pills border-bottom">
+            <li class="nav-item" ng-repeat="shapeObj in shapesArr" ng-click="fnSetSelectedShape(shapeObj)">
+                <a class="nav-link rounded-0" href="javascript:void(0);"
+                   ng-class="{'active': selectedShapeObj.name === shapeObj.name}">
+                    <i class="fa fa-fw {{shapeObj.icon}}"></i></a>
+            </li>
+        </ul>
+        <div id="draw-container" class="draw-container"></div>
+    </div>
+    <div class="col-md-3 p-0 border-left h-100"></div>
+</div>
