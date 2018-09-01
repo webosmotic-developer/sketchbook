@@ -9,5 +9,24 @@
         </ul>
         <div id="draw-container" class="draw-container"></div>
     </div>
-    <div class="col-md-3 p-0 border-left h-100"></div>
+    <div class="col-md-3 border-left h-100">
+        <h3>Properties</h3>
+        <div class="col-md-12"
+             ng-if="propertyObj"
+             ng-repeat="(key, val) in propertyObj.style">
+            <div class="col-md-12 p-0">
+                <label class="text-capitalize">{{key}}</label>
+            </div>
+            <div class="col-md-12 p-0">
+                <input required type="text" ng-model="propertyObj.style[key]">
+            </div>
+        </div>
+        <div class="col-md-12 mt-2" ng-if="propertyObj">
+            <button type="button" class="btn btn-primary"
+                    ng-click="fnUpdateProperties()">
+                Update Settings
+            </button>
+        </div>
+    </div>
+
 </div>

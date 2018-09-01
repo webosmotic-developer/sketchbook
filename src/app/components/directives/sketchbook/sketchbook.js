@@ -57,9 +57,9 @@
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
-                    {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {}},
-                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {}},
-                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {}}
+                    {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
+                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
+                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {stroke: '#000', 'stroke-width': '1px'}}
                 ];
 
                 $scope.sbData = {data: {}, metadata: []};
@@ -70,6 +70,22 @@
                 $scope.fnUpdate = function (data) {
                     fnCreateShapes(sbContainer, data);
                 };
+
+
+                /*----- START: Set and Update Property ------*/
+                $scope.fnSelectPropertyObj = function (sketch) {
+                    if (sketch) {
+                        $scope.propertyObj = sketch;
+                    } else {
+                        $scope.propertyObj = null;
+                    }
+                    $scope.$apply();
+                };
+
+                $scope.fnUpdateProperties = function () {
+                    $scope.fnUpdate($scope.sbData.metadata);
+                };
+                /*----- END: Set and Update Property ------*/
 
                 /**
                  * Resize sketchbook
@@ -125,6 +141,7 @@
                             d3.event.stopPropagation();
                             fnEraseResizeSelector();
                             fnUpdateResize(d3.select(this).select('path.shape-path'), d);
+                            $scope.fnSelectPropertyObj(d);
                         })
                         .call(shapeDrag);
 
@@ -215,6 +232,8 @@
                 function fnEraseResizeSelector() {
                     d3.selectAll('path.selection-path').remove();
                     d3.selectAll('circle.resize-circle').remove();
+                    $scope.propertyObj = null;
+                    $scope.$apply();
                 }
 
                 /*----- START: SVG Events -----*/
@@ -239,7 +258,7 @@
                         var mPoint = d3.mouse(sbSelector.node());
                         if (d3.event.shiftKey) {
                             cSelShapeObj.epX = Math.max(mPoint[0], mPoint[1]);
-                            cSelShapeObj.epY = cSelShapeObj.spY - cSelShapeObj.spX +  Math.max(mPoint[0], mPoint[1]);
+                            cSelShapeObj.epY = cSelShapeObj.spY - cSelShapeObj.spX + Math.max(mPoint[0], mPoint[1]);
                         } else {
                             cSelShapeObj.epX = mPoint[0];
                             cSelShapeObj.epY = mPoint[1];
@@ -294,19 +313,16 @@
                             var ry = cSelShapeObj.height; // Vertical
                             cSelShapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
                                 ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
-                            cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
                             break;
 
                         case 'RECT':
                             cSelShapeObj = fnCalShapeHW(cSelShapeObj);
                             cSelShapeObj.attr = fnCalcRectAttr(cSelShapeObj);
-                            cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
                             break;
 
                         case 'STRAIGHT_LINE':
                             cSelShapeObj.attr.d = line([[0, 0],
                                 [cSelShapeObj.epX - cSelShapeObj.spX, cSelShapeObj.epY - cSelShapeObj.spY]]);
-                            cSelShapeObj.style = {stroke: '#000', 'stroke-width': '1px'};
                             break;
 
                         case 'RESIZE_RECT':
