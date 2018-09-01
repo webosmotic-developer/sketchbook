@@ -2,7 +2,7 @@
     <div class="col-md-9 p-0 h-100">
         <ul class="nav nav-pills border-bottom">
             <li class="nav-item" ng-repeat="shapeObj in shapesArr" ng-click="fnSetSelectedShape(shapeObj)">
-                <a class="nav-link rounded-0" href="javascript:void(0);"
+                <a class="nav-link rounded-0" href="javascript:void(0);" title="{{shapeObj.name}}"
                    ng-class="{'active': selectedShapeObj.name === shapeObj.name}">
                     <i class="fa fa-fw {{shapeObj.icon}}"></i></a>
             </li>

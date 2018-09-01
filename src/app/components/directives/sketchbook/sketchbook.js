@@ -22,9 +22,10 @@
                         d3.event.sourceEvent.stopPropagation();
                     })
                     .on('drag', function (d) {
-                        d.startPoint = [d.startPoint[0] + d3.event.dx, d.startPoint[1] + d3.event.dy];
+                        d.spX = d.spX + d3.event.dx;
+                        d.spY = d.spY + d3.event.dy;
                         d3.select(this).attr('transform', function (d) {
-                            return 'translate(' + d.startPoint[0] + ',' + d.startPoint[1] + ')';
+                            return 'translate(' + d.spX + ',' + d.spY + ')';
                         });
                     });
 
@@ -34,31 +35,18 @@
                     })
                     .on('drag', function (d) {
                         var newEndPoint = d3.mouse(sbSelector.node());
-                        var h = newEndPoint[1] - d.startPoint[1];
-                        var w = newEndPoint[0] - d.startPoint[0];
-                        if (d.startPoint[0] < newEndPoint[0] && d.startPoint[1] < newEndPoint[1]) {
-                            d.attr.radius = Math.min(h, w) / 2;
-                            d.attr.height = h;
-                            d.attr.width = w;
+                        d.epX = newEndPoint[0];
+                        d.epY = newEndPoint[1];
+                        if (d.spX < d.epX && d.spY < d.epY) {
                             fnCreateShapePath(d3.select(this.parentNode), 'shape-path', d);
-
-                            var copyData = angular.copy(d);
-                            copyData.name = 'rect';
-                            copyData.style = {
-                                'fill': 'rgb(93, 162, 255, 0.5)', 'stroke-linecap': 'square', 'stroke': '#5da2ff',
-                                'stroke-linejoin': 'round', 'stroke-width': 2, 'stroke-dasharray': '5, 5'
-                            };
-                            fnCreateShapePath(d3.select(this.parentNode), 'selection-path', copyData);
-
-                            d3.select(this).attr('cx', w);
-                            d3.select(this).attr('cy', h);
+                            fnUpdateResize(d3.select(this.parentNode).select('path.shape-path'), d);
                         }
                     });
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
-                    {name: 'rect', icon: 'fa-square-o', attr: {}, style: {}},
-                    {name: 'circle', icon: 'fa-circle-o', attr: {}, style: {}}
+                    {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {}},
+                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {}}
                 ];
 
                 $scope.sbData = {data: {}, metadata: []};
@@ -89,10 +77,7 @@
                 $scope.fnCreate = function () {
                     sbSvg = d3.select(drawContainerEle).append('svg').attr('id', 'sb').attr('class', 'sb')
                         .on('mousedown', fnOnMouseDownSvgEvent)
-                        .on('click', function () {
-                            d3.selectAll('path.selection-path').remove();
-                            d3.selectAll('circle.resize-circle').remove();
-                        });
+                        .on('click', fnEraseResizeSelector);
                     sbZoom = sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
                     sbContainer = sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
                     sbSelector = sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
@@ -121,30 +106,19 @@
                         })
                         .attr('class', 'shape')
                         .attr('transform', function (d) {
-                            return 'translate(' + d.startPoint[0] + ',' + d.startPoint[1] + ')';
+                            return 'translate(' + d.spX + ',' + d.spY + ')';
                         })
                         .on('click', function (d) {
                             d3.event.stopPropagation();
-                            var bound = d3.select(this).select('path.shape-path').node().getBBox();
-                            d.attr.x = bound.x;
-                            d.attr.y = bound.y;
-                            d.attr.height = bound.height;
-                            d.attr.width = bound.width;
-                            fnCreateShapeResize(d3.select(this), 'resize-circle', d);
-                            var rectData = angular.copy(d);
-                            rectData.name = 'rect';
-                            rectData.style = {
-                                'fill': 'rgb(93, 162, 255, 0.5)', 'stroke-linecap': 'square', 'stroke': '#5da2ff',
-                                'stroke-linejoin': 'round', 'stroke-width': 2, 'stroke-dasharray': '5, 5'
-                            };
-                            fnCreateShapePath(d3.select(this), 'selection-path', rectData);
+                            fnEraseResizeSelector();
+                            fnUpdateResize(d3.select(this).select('path.shape-path'), d);
                         })
                         .call(shapeDrag);
 
                     // Update
                     shape
                         .attr('transform', function (d) {
-                            return 'translate(' + d.startPoint[0] + ',' + d.startPoint[1] + ')';
+                            return 'translate(' + d.spX + ',' + d.spY + ')';
                         });
 
                     fnCreateShapePath(shape, 'shape-path');
@@ -167,7 +141,7 @@
                     // Update
                     path
                         .each(function (d) {
-                            fnCreatePathString(d);
+                            d = fnUpdateAttr(d);
                             var element = d3.select(this);
                             angular.forEach(d.attr, function (val, key) {
                                 element.attr(key, val);
@@ -183,27 +157,6 @@
 
                 /*----- END: Create Shape Path -----*/
 
-                /*----- START: Create Path d attr value-----*/
-                function fnCreatePathString(d) {
-                    var attr = d.attr;
-                    switch (d.name) {
-                        case 'circle':
-                            var r = attr.radius;
-                            attr.d = 'M ' + r + ',' + r + ' m ' + -r + ', 0 a ' + r + ',' + r + ' 0 1,0 '
-                                + r * 2 + ',0 a ' + r + ',' + r + ' 0 1,0 ' + -r * 2 + ',0';
-                            break;
-
-                        case 'rect':
-                            var h = attr.height, w = attr.width, x = attr.x, y = attr.y;
-                            attr.d = 'M ' + x + ', ' + y + ' h ' + w + ' v ' + h + ' h ' + -w + ' v ' + -h + ' z';
-                            break;
-                        default:
-                            attr.d = null;
-                    }
-                }
-
-                /*----- END: Create Path d attr value-----*/
-
                 /*----- START: Create Shape Resize -----*/
                 function fnCreateShapeResize(select, selectAll, data) {
                     var circle = select.selectAll('circle.' + selectAll).data(function (d) {
@@ -216,12 +169,12 @@
                     // Update
                     circle
                         .attr('cx', function (d) {
-                            return d.attr.width;
+                            return d.width + d.x;
                         })
                         .attr('cy', function (d) {
-                            return d.attr.height;
+                            return d.height + d.y;
                         })
-                        .attr('r', 5)
+                        .attr('r', 7)
                         .style('cursor', 'nwse-resize')
                         .style('fill', '#5da2ff');
 
@@ -231,13 +184,35 @@
 
                 /*----- END: Create Shape Resize -----*/
 
+                /*----- START: Update Shape Resize -----*/
+                function fnUpdateResize(ele, d) {
+                    var bound = ele.node().getBBox();
+                    d.height = bound.height;
+                    d.width = bound.width;
+                    d.x = bound.x;
+                    d.y = bound.y;
+                    fnCreateShapeResize(d3.select(ele[0][0].parentNode), 'resize-circle', d);
+                    var rectData = angular.copy(d);
+                    rectData.type = 'RESIZE_RECT';
+                    fnCreateShapePath(d3.select(ele[0][0].parentNode), 'selection-path', rectData);
+                }
 
+                /*----- END: Update Shape Resize -----*/
+
+                function fnEraseResizeSelector() {
+                    d3.selectAll('path.selection-path').remove();
+                    d3.selectAll('circle.resize-circle').remove();
+                }
+
+                /*----- START: SVG Events -----*/
                 function fnOnMouseDownSvgEvent() {
                     d3.event.stopPropagation();
                     if (d3.event.type === 'mousedown' && $scope.selectedShapeObj) {
                         cSelShapeObj = angular.copy($scope.selectedShapeObj);
                         cSelShapeObj.id = 'shape' + Date.now();
-                        cSelShapeObj.startPoint = d3.mouse(sbSelector.node());
+                        var mPoint = d3.mouse(sbSelector.node());
+                        cSelShapeObj.spX = mPoint[0];
+                        cSelShapeObj.spY = mPoint[1];
                         sbSvg.on('mousemove', fnOnMouseMoveSvgEvent);
                         sbSvg.on('mouseup', fnIgnoreSvgEvents);
                         sbSvg.on('mouseleave', fnIgnoreSvgEvents);
@@ -248,8 +223,10 @@
                     d3.event.stopPropagation();
                     var type = d3.event.type;
                     if (type === 'mousemove') {
-                        cSelShapeObj.endPoint = d3.mouse(sbSelector.node());
-                        fnCreateShapes(sbSelector, [fnReturnShapeData(cSelShapeObj)]);
+                        var mPoint = d3.mouse(sbSelector.node());
+                        cSelShapeObj.epX = mPoint[0];
+                        cSelShapeObj.epY = mPoint[1];
+                        fnCreateShapes(sbSelector, [cSelShapeObj]);
                     }
                 }
 
@@ -262,39 +239,58 @@
                     sbSvg.on('mousemove', null);
                     sbSvg.on('mouseup', null);
                     sbSvg.on('mouseleave', null);
-                    if (cSelShapeObj && cSelShapeObj.endPoint) {
-                        $scope.sbData.metadata.push(fnReturnShapeData(cSelShapeObj));
+                    if (cSelShapeObj && cSelShapeObj.epX && cSelShapeObj.epY) {
+                        $scope.sbData.metadata.push(cSelShapeObj);
                         $scope.fnUpdate($scope.sbData.metadata);
                         cSelShapeObj = null;
                     }
                 }
 
+                /*----- END: SVG Events -----*/
+
                 function fnCalShapeHW(cSelShapeObj) {
-                    var sPoint = cSelShapeObj.startPoint;
-                    var ePoint = cSelShapeObj.endPoint;
-                    var height = ePoint[1] - sPoint[1];
-                    var width = ePoint[0] - sPoint[0];
-                    return {height: height, width: width};
+                    cSelShapeObj.height = cSelShapeObj.epY - cSelShapeObj.spY;
+                    cSelShapeObj.width = cSelShapeObj.epX - cSelShapeObj.spX;
+                    return cSelShapeObj;
                 }
 
-                function fnReturnShapeData(cSelShapeObj) {
-                    var hw = fnCalShapeHW(cSelShapeObj);
-                    var h = hw.height;
-                    var w = hw.width;
-                    cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
-                    switch (cSelShapeObj.name) {
-                        case 'circle':
-                            var r = Math.min(h, w) / 2;
-                            cSelShapeObj.attr.radius = r;
-                            cSelShapeObj.attr.height = h;
-                            cSelShapeObj.attr.width = w;
+                function fnUpdateAttr(cSelShapeObj) {
+                    var h = 0, w = 0,
+                        x = cSelShapeObj.x ? cSelShapeObj.x : 0,
+                        y = cSelShapeObj.y ? cSelShapeObj.y : 0;
+                    var fnCalcRectAttr = function (attr) {
+                        h = cSelShapeObj.height;
+                        w = cSelShapeObj.width;
+                        attr.x = x;
+                        attr.y = y;
+                        attr.height = h;
+                        attr.width = w;
+                        attr.d = 'M ' + x + ', ' + y + ' h ' + w + ' v ' + h + ' h ' + -w + ' v ' + -h + ' z';
+                        return attr;
+                    };
+                    switch (cSelShapeObj.type) {
+                        case 'CIRCLE_OR_ELLIPSE':
+                            cSelShapeObj = fnCalShapeHW(cSelShapeObj);
+                            var r = Math.min(cSelShapeObj.height, cSelShapeObj.width) / 2;
+                            var rx = cSelShapeObj.width; // Horizontal
+                            var ry = cSelShapeObj.height; // Vertical
+                            cSelShapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
+                                ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
+                            cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
                             break;
 
-                        case 'rect':
-                            cSelShapeObj.attr.x = 0;
-                            cSelShapeObj.attr.y = 0;
-                            cSelShapeObj.attr.height = h;
-                            cSelShapeObj.attr.width = w;
+                        case 'RECT':
+                            cSelShapeObj = fnCalShapeHW(cSelShapeObj);
+                            cSelShapeObj.attr = fnCalcRectAttr(cSelShapeObj);
+                            cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
+                            break;
+
+                        case 'RESIZE_RECT':
+                            cSelShapeObj.attr = fnCalcRectAttr(cSelShapeObj);
+                            cSelShapeObj.style = {
+                                'fill': 'rgb(93, 162, 255, 0.5)', 'stroke-linecap': 'square', 'stroke': '#5da2ff',
+                                'stroke-linejoin': 'round', 'stroke-width': 2, 'stroke-dasharray': '5, 5'
+                            };
                             break;
                     }
                     return cSelShapeObj;
