@@ -35,18 +35,31 @@
                     })
                     .on('drag', function (d) {
                         var newEndPoint = d3.mouse(sbSelector.node());
-                        d.epX = newEndPoint[0];
-                        d.epY = newEndPoint[1];
+                        if (d3.event.sourceEvent.shiftKey) {
+                            d.epX = Math.max(newEndPoint[0], newEndPoint[1]);
+                            d.epY = d.spY - d.spX + Math.max(newEndPoint[0], newEndPoint[1]);
+                        } else {
+                            d.epX = newEndPoint[0];
+                            d.epY = newEndPoint[1];
+                        }
                         if (d.spX < d.epX && d.spY < d.epY) {
                             fnCreateShapePath(d3.select(this.parentNode), 'shape-path', d);
                             fnUpdateResize(d3.select(this.parentNode).select('path.shape-path'), d);
                         }
                     });
+                var line = d3.svg.line()
+                    .x(function (d) {
+                        return d[0];
+                    })
+                    .y(function (d) {
+                        return d[1];
+                    });
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
                     {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {}},
-                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {}}
+                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {}},
+                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {}}
                 ];
 
                 $scope.sbData = {data: {}, metadata: []};
@@ -224,8 +237,13 @@
                     var type = d3.event.type;
                     if (type === 'mousemove') {
                         var mPoint = d3.mouse(sbSelector.node());
-                        cSelShapeObj.epX = mPoint[0];
-                        cSelShapeObj.epY = mPoint[1];
+                        if (d3.event.shiftKey) {
+                            cSelShapeObj.epX = Math.max(mPoint[0], mPoint[1]);
+                            cSelShapeObj.epY = cSelShapeObj.spY - cSelShapeObj.spX +  Math.max(mPoint[0], mPoint[1]);
+                        } else {
+                            cSelShapeObj.epX = mPoint[0];
+                            cSelShapeObj.epY = mPoint[1];
+                        }
                         fnCreateShapes(sbSelector, [cSelShapeObj]);
                     }
                 }
@@ -283,6 +301,12 @@
                             cSelShapeObj = fnCalShapeHW(cSelShapeObj);
                             cSelShapeObj.attr = fnCalcRectAttr(cSelShapeObj);
                             cSelShapeObj.style = {fill: 'transparent', stroke: '#000'};
+                            break;
+
+                        case 'STRAIGHT_LINE':
+                            cSelShapeObj.attr.d = line([[0, 0],
+                                [cSelShapeObj.epX - cSelShapeObj.spX, cSelShapeObj.epY - cSelShapeObj.spY]]);
+                            cSelShapeObj.style = {stroke: '#000', 'stroke-width': '1px'};
                             break;
 
                         case 'RESIZE_RECT':
