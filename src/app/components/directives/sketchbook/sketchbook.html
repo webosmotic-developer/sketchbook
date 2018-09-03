@@ -9,20 +9,100 @@
         </ul>
         <div id="draw-container" class="draw-container"></div>
     </div>
-    <div class="col-md-3 border-left h-100">
-        <h3>Properties</h3>
-        <div class="col-md-12"
-             ng-if="propertyObj"
-             ng-repeat="(key, val) in propertyObj.style">
-            <div class="col-md-12 p-0">
-                <label class="text-capitalize">{{key}}</label>
-            </div>
-            <div class="col-md-12 p-0">
-                <input required type="text" ng-model="propertyObj.style[key]">
+    <div class="col-md-3 border-left h-100 propertiesDiv">
+        <div class="col-12 p-0">
+            <h3 class="mt-2">Properties</h3>
+            <div id="accordion">
+                <div class="card" ng-if="propertyObj">
+                    <div class="card-header" id="headingOne">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse"
+                                    data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Styles
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                         data-parent="#accordion">
+                        <div class="card-body">
+                            <div class="col-12 p-0"
+                                 ng-repeat="(key, val) in propertyObj.style">
+                                <div class="col-md-12 p-0">
+                                    <label class="text-capitalize">{{key}}</label>
+                                </div>
+                                <div class="col-md-12 p-0 mb-2" ng-if="key !== 'font-size'">
+                                    <input required type="text" ng-model="propertyObj.style[key]">
+                                </div>
+                                <div class="col-md-12 p-0 mb-2" ng-if="key === 'font-size'">
+                                    <input required type="number" ng-model="propertyObj.style[key]">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" ng-if="propertyObj.height >= 0 || propertyObj.width >= 0">
+                    <div class="card-header" id="headingTwo">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse"
+                                    data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                Dimensions
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo"
+                         data-parent="#accordion">
+                        <div class="card-body">
+                            <div class="col-12 p-0">
+                                <div class="col-md-12 p-0">
+                                    <label class="text-capitalize">Height</label>
+                                </div>
+                                <div class="col-md-12 p-0 mb-2">
+                                    <input required type="number"
+                                           ng-change="!propertyObj.height ? propertyObj.height = 0 : ''"
+                                           ng-model="propertyObj.height">
+                                </div>
+                            </div>
+                            <div class="col-12 p-0">
+                                <div class="col-md-12 p-0">
+                                    <label class="text-capitalize">Width</label>
+                                </div>
+                                <div class="col-md-12 p-0 mb-2">
+                                    <input required type="number"
+                                           ng-change="!propertyObj.width ? propertyObj.width = 0 : ''"
+                                           ng-model="propertyObj.width">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" ng-if="propertyObj.text">
+                    <div class="card-header" id="headingThree">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link" data-toggle="collapse"
+                                    data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                                Value
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapseThree" class="collapse show" aria-labelledby="headingThree"
+                         data-parent="#accordion">
+                        <div class="card-body">
+                            <div class="col-12 p-0">
+                                <div class="col-md-12 p-0">
+                                    <label class="text-capitalize">Value</label>
+                                </div>
+                                <div class="col-md-12 p-0 mb-2">
+                                    <input required type="text"
+                                           ng-model="propertyObj.text">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-12 mt-2" ng-if="propertyObj">
-            <button type="button" class="btn btn-primary"
+        <div class="col-12 p-0 mt-2" ng-if="propertyObj">
+            <button type="button" class="btn btn-primary pull-right"
                     ng-click="fnUpdateProperties()">
                 Update Settings
             </button>

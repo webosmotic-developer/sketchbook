@@ -43,6 +43,12 @@
                             d.epY = newEndPoint[1];
                         }
                         if (d.spX < d.epX && d.spY < d.epY) {
+                            switch (d.type) {
+                                case 'CIRCLE_OR_ELLIPSE':
+                                case 'RECT':
+                                    d = fnCalShapeHW(d);
+                                    break;
+                            }
                             fnCreateShapePath(d3.select(this.parentNode), 'shape-path', d);
                             fnUpdateResize(d3.select(this.parentNode).select('path.shape-path'), d);
                         }
@@ -59,7 +65,9 @@
                 $scope.shapesArr = [
                     {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
                     {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
-                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {stroke: '#000', 'stroke-width': '1px'}}
+                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {stroke: '#000', 'stroke-width': '1px'}},
+                    {name: 'text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
+                        style: {stroke: '#000', 'stroke-width': '1px', 'text-anchor': 'middle', 'font-size': 40, 'font-family':'sans-serif'}}
                 ];
 
                 $scope.sbData = {data: {}, metadata: []};
@@ -140,7 +148,9 @@
                         .on('click', function (d) {
                             d3.event.stopPropagation();
                             fnEraseResizeSelector();
-                            fnUpdateResize(d3.select(this).select('path.shape-path'), d);
+                            if (d.type !== 'TEXT') {
+                                fnUpdateResize(d3.select(this).select('path.shape-path'), d);
+                            }
                             $scope.fnSelectPropertyObj(d);
                         })
                         .call(shapeDrag);
@@ -151,13 +161,49 @@
                             return 'translate(' + d.spX + ',' + d.spY + ')';
                         });
 
-                    fnCreateShapePath(shape, 'shape-path');
+                    angular.forEach(data, function (d) {
+                        if (d.type === 'TEXT') {
+                            fnCreateTextElem(shape, 'shape-text');
+                        } else {
+                            fnCreateShapePath(shape, 'shape-path');
+                        }
+                    });
 
                     // Exit
                     shape.exit().remove();
                 }
 
                 /*----- END: Create Shape -----*/
+
+                /*----- START: Create Text -----*/
+                function fnCreateTextElem(select, selectAll, data) {
+                    var text = select.selectAll('text.' + selectAll).data(function (d) {
+                        return data ? [data] : [d];
+                    });
+
+                    // Enter
+                    text.enter().append('text').attr('class', selectAll);
+
+                    // Update
+                    text
+                        .each(function (d) {
+                            d = fnUpdateAttr(d);
+                            var element = d3.select(this);
+                            angular.forEach(d.attr, function (val, key) {
+                                element.attr(key, val);
+                            });
+                            angular.forEach(d.style, function (val, key) {
+                                element.style(key, val);
+                            });
+                            if(d.text) {
+                                element.text(d.text);
+                            }
+                        });
+
+                    // Exit
+                    text.exit().remove();
+                }
+                /*----- END: Create Text -----*/
 
                 /*----- START: Create Shape Path -----*/
                 function fnCreateShapePath(select, selectAll, data) {
@@ -263,6 +309,12 @@
                             cSelShapeObj.epX = mPoint[0];
                             cSelShapeObj.epY = mPoint[1];
                         }
+                        switch (cSelShapeObj.type) {
+                            case 'CIRCLE_OR_ELLIPSE':
+                            case 'RECT':
+                                cSelShapeObj = fnCalShapeHW(cSelShapeObj);
+                                break;
+                        }
                         fnCreateShapes(sbSelector, [cSelShapeObj]);
                     }
                 }
@@ -277,7 +329,7 @@
                     sbSvg.on('mouseup', null);
                     sbSvg.on('mouseleave', null);
                     if (cSelShapeObj && cSelShapeObj.epX && cSelShapeObj.epY) {
-                        $scope.sbData.metadata.push(cSelShapeObj);
+                        $scope.sbData.metadata.push(angular.copy(cSelShapeObj));
                         $scope.fnUpdate($scope.sbData.metadata);
                         cSelShapeObj = null;
                     }
@@ -307,7 +359,6 @@
                     };
                     switch (cSelShapeObj.type) {
                         case 'CIRCLE_OR_ELLIPSE':
-                            cSelShapeObj = fnCalShapeHW(cSelShapeObj);
                             var r = Math.min(cSelShapeObj.height, cSelShapeObj.width) / 2;
                             var rx = cSelShapeObj.width; // Horizontal
                             var ry = cSelShapeObj.height; // Vertical
@@ -316,13 +367,17 @@
                             break;
 
                         case 'RECT':
-                            cSelShapeObj = fnCalShapeHW(cSelShapeObj);
                             cSelShapeObj.attr = fnCalcRectAttr(cSelShapeObj);
                             break;
 
                         case 'STRAIGHT_LINE':
                             cSelShapeObj.attr.d = line([[0, 0],
                                 [cSelShapeObj.epX - cSelShapeObj.spX, cSelShapeObj.epY - cSelShapeObj.spY]]);
+                            break;
+
+                        case 'TEXT':
+                            cSelShapeObj.attr.x = cSelShapeObj.epX - cSelShapeObj.spX;
+                            cSelShapeObj.attr.y = cSelShapeObj.epY - cSelShapeObj.spY;
                             break;
 
                         case 'RESIZE_RECT':
