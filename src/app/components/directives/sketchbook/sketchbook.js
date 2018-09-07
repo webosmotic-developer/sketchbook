@@ -115,6 +115,21 @@
                     sbSvg = d3.select(drawContainerEle).append('svg').attr('id', 'sb').attr('class', 'sb')
                         .on('mousedown', fnOnMouseDownSvgEvent)
                         .on('click', fnEraseResizeSelector);
+                    d3.select("body")
+                        .on('keyup', function () {
+                            if(d3.event && d3.event.keyCode === 46 && $scope.propertyObj) {
+                                if(d3.select("#" + $scope.propertyObj.id)) {
+                                    d3.select("#" + $scope.propertyObj.id).remove();
+                                    angular.forEach($scope.sbData.metadata, function (metaObj, index) {
+                                        if(metaObj.id === $scope.propertyObj.id) {
+                                            $scope.sbData.metadata.splice(index, 1);
+                                        }
+                                    });
+                                    $scope.propertyObj = null;
+                                    $scope.$apply();
+                                }
+                            }
+                        });
                     sbZoom = sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
                     sbContainer = sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
                     sbSelector = sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
