@@ -63,11 +63,37 @@
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
-                    {name: 'rect', type: 'RECT', icon: 'fa-square-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
-                    {name: 'circle', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: {fill: 'transparent', stroke: '#000'}},
-                    {name: 'line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: {stroke: '#000', 'stroke-width': '1px'}},
-                    {name: 'text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
-                        style: {stroke: '#000', 'stroke-width': '1px', 'text-anchor': 'middle', 'font-size': 40, 'font-family':'sans-serif'}}
+                    {
+                        name: 'rect',
+                        type: 'RECT',
+                        icon: 'fa-square-o',
+                        attr: {},
+                        style: {fill: 'transparent', stroke: '#000'}
+                    },
+                    {
+                        name: 'circle',
+                        type: 'CIRCLE_OR_ELLIPSE',
+                        icon: 'fa-circle-o',
+                        attr: {},
+                        style: {fill: 'transparent', stroke: '#000'}
+                    },
+                    {
+                        name: 'line',
+                        type: 'STRAIGHT_LINE',
+                        icon: 'fa-minus',
+                        attr: {},
+                        style: {stroke: '#000', 'stroke-width': '1px'}
+                    },
+                    {
+                        name: 'text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
+                        style: {
+                            stroke: '#000',
+                            'stroke-width': '1px',
+                            'text-anchor': 'middle',
+                            'font-size': 40,
+                            'font-family': 'sans-serif'
+                        }
+                    }
                 ];
 
                 $scope.sbData = {data: {}, metadata: []};
@@ -117,11 +143,11 @@
                         .on('click', fnEraseResizeSelector);
                     d3.select("body")
                         .on('keyup', function () {
-                            if(d3.event && d3.event.keyCode === 46 && $scope.propertyObj) {
-                                if(d3.select("#" + $scope.propertyObj.id)) {
+                            if (d3.event && d3.event.keyCode === 46 && $scope.propertyObj) {
+                                if (d3.select("#" + $scope.propertyObj.id)) {
                                     d3.select("#" + $scope.propertyObj.id).remove();
                                     angular.forEach($scope.sbData.metadata, function (metaObj, index) {
-                                        if(metaObj.id === $scope.propertyObj.id) {
+                                        if (metaObj.id === $scope.propertyObj.id) {
                                             $scope.sbData.metadata.splice(index, 1);
                                         }
                                     });
@@ -210,7 +236,7 @@
                             angular.forEach(d.style, function (val, key) {
                                 element.style(key, val);
                             });
-                            if(d.text) {
+                            if (d.text) {
                                 element.text(d.text);
                             }
                         });
@@ -218,6 +244,7 @@
                     // Exit
                     text.exit().remove();
                 }
+
                 /*----- END: Create Text -----*/
 
                 /*----- START: Create Shape Path -----*/
@@ -260,10 +287,10 @@
                     // Update
                     circle
                         .attr('cx', function (d) {
-                            return d.width + d.x;
+                            return d.rpX;
                         })
                         .attr('cy', function (d) {
-                            return d.height + d.y;
+                            return d.rpY;
                         })
                         .attr('r', 7)
                         .style('cursor', 'nwse-resize')
@@ -278,12 +305,14 @@
                 /*----- START: Update Shape Resize -----*/
                 function fnUpdateResize(ele, d) {
                     var bound = ele.node().getBBox();
-                    d.height = bound.height;
-                    d.width = bound.width;
-                    d.x = bound.x;
-                    d.y = bound.y;
-                    fnCreateShapeResize(d3.select(ele[0][0].parentNode), 'resize-circle', d);
                     var rectData = angular.copy(d);
+                    rectData.height = bound.height;
+                    rectData.width = bound.width;
+                    rectData.x = bound.x;
+                    rectData.y = bound.y;
+                    d.rpX = rectData.x + rectData.width;
+                    d.rpY = rectData.y + rectData.height;
+                    fnCreateShapeResize(d3.select(ele[0][0].parentNode), 'resize-circle', d);
                     rectData.type = 'RESIZE_RECT';
                     fnCreateShapePath(d3.select(ele[0][0].parentNode), 'selection-path', rectData);
                 }
