@@ -6,7 +6,7 @@
         .directive('sketchbook', fnSketchbookDirective);
 
     /** @ngInject */
-    function fnSketchbookDirective(d3, Sketchbook) {
+    function fnSketchbookDirective($timeout, d3, Sketchbook) {
         return {
             restrict: 'EA',
             scope: {},
@@ -87,13 +87,20 @@
 
                 /*----- START: Highlight Elements ------*/
                 $scope.fnHighlightShape = function (isCalledForHighlight, metaObj) {
-
+                    sketchbook.highlightShape(isCalledForHighlight, metaObj, $scope.propertyObj);
                 };
                 /*----- END: Highlight Elements ------*/
 
                 $scope.fnSetSelectedShape = function (shapeObj) {
                     $scope.selectedShapeObj = shapeObj;
                     sketchbook.setShapeObj(angular.fromJson(angular.toJson(shapeObj)));
+                };
+
+                sketchbook.removeSelectedShape = function () {
+                    $scope.selectedShapeObj = null;
+                    $timeout(function () {
+                        $scope.$apply();
+                    })
                 };
             }
         }

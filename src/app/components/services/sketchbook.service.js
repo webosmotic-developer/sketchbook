@@ -53,11 +53,11 @@
                 return d[1];
             });
 
-        _this.onMouseOverSvgEvent = function () { 
-            if(_this.shapeObj) {
+        _this.onMouseOverSvgEvent = function () {
+            if (_this.shapeObj) {
                 _this.sbSvg.style('cursor', 'crosshair');
             }
-        }
+        };
 
         /**
          * Create svg mouse down event
@@ -109,8 +109,8 @@
         };
 
         /**
-        * Create svg mouse leave event
-        * */
+         * Create svg mouse leave event
+         * */
         _this.onMouseLeaveSvgEvent = function () {
             _this.ignoreSvgEvents();
         };
@@ -127,7 +127,7 @@
                 sketchbook.update(_this.data);
                 sketchbook.setShapeObj(null);
             }
-        }
+        };
 
         /**
          * Erase selection
@@ -178,6 +178,30 @@
                 if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
             }
             return copy;
+        };
+
+        _this.fnHighlightShape = function (isCalledForHighlight, data, propertyObj) {
+            d3.selectAll('path.selection-path').remove();
+            d3.selectAll('circle.resize-circle').remove();
+            if (isCalledForHighlight) {
+                if (data.type !== 'TEXT') {
+                    if (data.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('svg.shape-arc'), data);
+                    } else {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
+                    }
+                }
+            } else if (propertyObj) {
+                if (propertyObj.type !== 'TEXT') {
+                    if (propertyObj.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('svg.shape-arc'),
+                            propertyObj);
+                    } else {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
+                            propertyObj);
+                    }
+                }
+            }
         };
 
         /**
@@ -263,11 +287,11 @@
         };
 
         /**
-        * Create Input Text element
-        * @param select
-        * @param selectAll
-        * @param data
-        * */
+         * Create Input Text element
+         * @param select
+         * @param selectAll
+         * @param data
+         * */
         _this.createShapePath = function (select, selectAll, data) {
             var path = select.selectAll('path.' + selectAll).data(function (d) {
                 return data ? [data] : [d];
@@ -394,7 +418,10 @@
             _this.sbSvg = d3.select(_this.parentEle).append('svg').attr('id', 'sb').attr('class', 'sb')
                 .on('mouseover', _this.onMouseOverSvgEvent)
                 .on('mousedown', _this.onMouseDownSvgEvent)
-                .on('click', _this.eraseResizeSelector);
+                .on('click', function () {
+                    _this.eraseResizeSelector();
+                    sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
+                });
             _this.sbZoom = _this.sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
             _this.sbContainer = _this.sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
             _this.sbSelector = _this.sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
@@ -434,6 +461,10 @@
                 });
         };
 
+        Sketchbook.prototype.highlightShape = function (isCalledForHighlight, dataObj, propertyObj) {
+            _this.fnHighlightShape(isCalledForHighlight, dataObj, propertyObj);
+        };
+
         /**
          * Set Margin
          * @param margin
@@ -461,6 +492,9 @@
          * */
         Sketchbook.prototype.setShapeObj = function (shapeObj) {
             _this.shapeObj = shapeObj ? _this.clone(shapeObj) : null;
+            if(!shapeObj) {
+                sketchbook.removeSelectedShapeCallback(sketchbook.removeSelectedShape);
+            }
         };
 
         /**
@@ -475,6 +509,20 @@
          * On shape click event
          * */
         Sketchbook.prototype.onShapeClick = function () {
+        };
+
+        /**
+         * On shape click callback
+         * @param callback
+         * */
+        Sketchbook.prototype.removeSelectedShapeCallback = function (callback) {
+            callback(arguments[1]);
+        };
+
+        /**
+         * On shape click event
+         * */
+        Sketchbook.prototype.removeSelectedShape = function () {
         };
 
         /**
