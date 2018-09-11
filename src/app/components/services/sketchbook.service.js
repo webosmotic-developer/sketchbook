@@ -67,7 +67,7 @@
                 _this.sbSvg.on('mouseup', _this.onMouseUpSvgEvent);
                 _this.sbSvg.on('mouseleave', _this.onMouseLeaveSvgEvent);
             }
-        }
+        };
 
         /**
          * Create svg mouse move event
@@ -92,21 +92,21 @@
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
             }
-        }
+        };
 
         /**
          * Create svg mouse up event
          * */
         _this.onMouseUpSvgEvent = function () {
             _this.ignoreSvgEvents();
-        }
+        };
 
         /**
         * Create svg mouse leave event
         * */
         _this.onMouseLeaveSvgEvent = function () {
             _this.ignoreSvgEvents();
-        }
+        };
 
         _this.ignoreSvgEvents = function () {
             d3.event.stopPropagation();
@@ -118,7 +118,7 @@
                 _this.data.push(_this.clone(_this.shapeObj));
                 sketchbook.update(_this.data);
                 sketchbook.setShapeObj(null);
-            }            
+            }
         }
 
         /**
@@ -128,7 +128,7 @@
             d3.selectAll('path.selection-path').remove();
             d3.selectAll('circle.resize-circle').remove();
             sketchbook.setShapeObj(null);
-        }
+        };
 
         /**
          * Update shape resize selector
@@ -147,7 +147,7 @@
             _this.createShapeResize(d3.select(ele[0][0].parentNode), 'resize-circle', d);
             rectData.type = 'RESIZE_RECT';
             _this.createShapePath(d3.select(ele[0][0].parentNode), 'selection-path', rectData);
-        }
+        };
 
         /**
          * Calculate shape height and width
@@ -157,7 +157,7 @@
             shapeObj.height = shapeObj.epY - shapeObj.spY;
             shapeObj.width = shapeObj.epX - shapeObj.spX;
             return shapeObj;
-        }
+        };
 
         /**
          * Clone object
@@ -170,7 +170,7 @@
                 if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
             }
             return copy;
-        }
+        };
 
         /**
          * Create shapes
@@ -218,7 +218,7 @@
 
             // Exit
             shape.exit().remove();
-        }
+        };
 
         /**
          * Create Input Text element
@@ -252,7 +252,7 @@
 
             // Exit
             text.exit().remove();
-        }
+        };
 
         /**
         * Create Input Text element
@@ -283,7 +283,7 @@
 
             // Exit
             path.exit().remove();
-        }
+        };
 
         /**
          * Create Shape resize element
@@ -313,7 +313,7 @@
 
             // Exit
             circle.exit().remove();
-        }
+        };
 
         /**
          * Update attr for element
@@ -363,7 +363,7 @@
                     break;
             }
             return shapeObj;
-        }
+        };
 
         /**
          * Sketchbook constructor.
@@ -390,7 +390,7 @@
             _this.sbContainer = _this.sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
             _this.sbSelector = _this.sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
             this.resize();
-        }
+        };
 
         /**
          * Update sketchbook
@@ -398,7 +398,7 @@
          * */
         Sketchbook.prototype.update = function (data) {
             _this.createShapes(_this.sbContainer, data);
-        }
+        };
 
         /**
          * Resize sketchbook
@@ -411,7 +411,7 @@
                 .attr('height', this.height + _this.margin.top + _this.margin.bottom);
             _this.sbContainer.attr('transform', 'translate(' + _this.margin.left + ',' + _this.margin.top + ')');
             _this.sbSelector.attr('transform', 'translate(' + _this.margin.left + ',' + _this.margin.top + ')');
-        }
+        };
 
         /**
          * Set Margin
@@ -424,7 +424,7 @@
                 bottom: margin && margin.bottom ? margin.bottom : 20,
                 left: margin && margin.left ? margin.left : 20
             };
-        }
+        };
 
         /**
          * Set Parrent element for append svg element
@@ -432,15 +432,15 @@
          * */
         Sketchbook.prototype.setParentElement = function (parentEle) {
             _this.parentEle = parentEle ? parentEle : 'body';
-        }
+        };
 
         /**
          * Set shape object
          * @param shapeObj
          * */
-        Sketchbook.prototype.setShapeObj = function (shapeObj) {            
+        Sketchbook.prototype.setShapeObj = function (shapeObj) {
             _this.shapeObj = shapeObj ? _this.clone(shapeObj) : null;
-        }
+        };
 
         /**
          * On shape click callback
@@ -448,13 +448,13 @@
          * */
         Sketchbook.prototype.onShapeClickCallback = function (callback) {
             callback(arguments[1]);
-        }
+        };
 
         /**
          * On shape click event
          * */
         Sketchbook.prototype.onShapeClick = function () {
-        }
+        };
 
         /**
          * Set width
@@ -462,7 +462,7 @@
          * */
         Sketchbook.prototype.setWidth = function (width) {
             _this.width = width ? width : 0;
-        }
+        };
 
         /**
          * Set height
@@ -470,7 +470,7 @@
          * */
         Sketchbook.prototype.setHeight = function (height) {
             _this.height = height ? height : 0;
-        }
+        };
 
         /**
          * Set data
@@ -478,7 +478,7 @@
          * */
         Sketchbook.prototype.setData = function (data) {
             _this.data = data ? data : [];
-        }
+        };
 
         return Sketchbook;
     }
