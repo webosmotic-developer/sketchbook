@@ -422,6 +422,23 @@
                     _this.eraseResizeSelector();
                     sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
                 });
+            d3.select("body")
+                .on('keyup', function () {
+                    if(d3.event && d3.event.keyCode === 46) {
+                        var selectionPath = d3.select("#sb-container").selectAll("g").selectAll(".selection-path");
+                        angular.forEach(selectionPath, function (data) {
+                            if(data[0] && data[0].parentNode.__data__.id) {
+                                d3.select("#" + data[0].parentNode.__data__.id).remove();
+                                angular.forEach(_this.data, function (dataObj, index) {
+                                    if(dataObj.id === data[0].parentNode.__data__.id) {
+                                        _this.data.splice(index, 1);
+                                    }
+                                });
+                                sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
+                            }
+                        });
+                    }
+                });
             _this.sbZoom = _this.sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
             _this.sbContainer = _this.sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
             _this.sbSelector = _this.sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
