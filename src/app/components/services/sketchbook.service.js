@@ -50,7 +50,7 @@
                                 o.width = d.width;
                                 return o.type === 'RECT';
                             })[0];
-                            rangeSliderLinearScale.range([d.handleSize, d.width - d.handleSize]);
+                            d.scale.range([d.handleSize, d.width - d.handleSize]);
                             _this.createRangeSlider(d3.select(this.parentNode.parentNode), 'range-slider', d);
                             _this.updateResizeSelector(d3.select(this.parentNode).select('path.rs-path'), data);
                             break;
@@ -64,7 +64,6 @@
             .y(function (d) {
                 return d[1];
             });
-        var rangeSliderLinearScale = d3.scale.linear().domain([0, 50]);
 
         _this.onMouseOverSvgEvent = function () {
             if (_this.shapeObj) {
@@ -79,6 +78,9 @@
             d3.event.stopPropagation();
             if (d3.event.type === 'mousedown' && _this.shapeObj) {
                 _this.shapeObj.id = 'sb' + Date.now();
+                if (_this.shapeObj.type === 'RANGE_SLIDER') {
+                    _this.shapeObj.scale = d3.scale.linear().domain([0, 50]);
+                }
                 _this.shapeObj.zIndex = _this.data.length + 1;
                 var mPoint = d3.mouse(_this.sbSelector.node());
                 _this.shapeObj.spX = mPoint[0];
@@ -112,7 +114,7 @@
                     case 'RANGE_SLIDER':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.1; // 10% of height or width
-                        rangeSliderLinearScale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
+                        _this.shapeObj.scale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
                         break;
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
@@ -141,7 +143,7 @@
             _this.sbSvg.on('mouseup', null);
             _this.sbSvg.on('mouseleave', null);
             if (_this.shapeObj && _this.shapeObj.epX && _this.shapeObj.epY) {
-                _this.data.push(_this.clone(_this.shapeObj));                
+                _this.data.push(_this.clone(_this.shapeObj));
                 sketchbook.update(_this.data);
                 sketchbook.setShapeObj(null);
             }
@@ -221,11 +223,11 @@
                 .on('click', function (d) {
                     d3.event.stopPropagation();
                     _this.eraseResizeSelector();
-                    if (d.type === 'RANGE_SLIDER') {                        
+                    if (d.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
                     } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
-                    }                    
+                    }
                     sketchbook.onShapeClickCallback(sketchbook.onShapeClick, d);
                 })
                 .call(shapeDrag);
@@ -368,6 +370,7 @@
                             o.min = so.min;
                             o.max = so.max;
                             o.handleSize = so.handleSize;
+                            o.scale = so.scale;
                             return o;
                         });
                     }
@@ -455,7 +458,7 @@
 
                 case 'RANGE_SLIDER_MIN_ELLIPSE':
                 case 'RANGE_SLIDER_MAX_ELLIPSE':
-                    var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? rangeSliderLinearScale(shapeObj.min) : rangeSliderLinearScale(shapeObj.max));
+                    var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? shapeObj.scale(shapeObj.min) : shapeObj.scale(shapeObj.max));
                     r = shapeObj.handleSize; // 10% of height or width
                     rx = r; // Horizontal
                     ry = r; // Vertical                    
