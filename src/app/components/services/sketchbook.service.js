@@ -53,6 +53,12 @@
                 return d[1];
             });
 
+        _this.onMouseOverSvgEvent = function () { 
+            if(_this.shapeObj) {
+                _this.sbSvg.style('cursor', 'crosshair');
+            }
+        }
+
         /**
          * Create svg mouse down event
          * */
@@ -112,6 +118,7 @@
         _this.ignoreSvgEvents = function () {
             d3.event.stopPropagation();
             d3.select('#' + _this.shapeObj.id).remove();
+            _this.sbSvg.style('cursor', 'default');
             _this.sbSvg.on('mousemove', null);
             _this.sbSvg.on('mouseup', null);
             _this.sbSvg.on('mouseleave', null);
@@ -385,6 +392,7 @@
          * */
         Sketchbook.prototype.create = function () {
             _this.sbSvg = d3.select(_this.parentEle).append('svg').attr('id', 'sb').attr('class', 'sb')
+                .on('mouseover', _this.onMouseOverSvgEvent)
                 .on('mousedown', _this.onMouseDownSvgEvent)
                 .on('click', _this.eraseResizeSelector);
             _this.sbZoom = _this.sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
