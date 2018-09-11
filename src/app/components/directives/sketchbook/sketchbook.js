@@ -16,8 +16,8 @@
                 var drawContainerObj = angular.element(drawContainerEle)[0];
                 var sketchbook = new Sketchbook({
                     parentEle: drawContainerEle,
-                    width:  drawContainerObj.clientWidth,
-                    height:  drawContainerObj.clientHeight
+                    width: drawContainerObj.clientWidth,
+                    height: drawContainerObj.clientHeight
                 });
 
                 $scope.sortableOptions = {
@@ -33,29 +33,23 @@
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
+                    { name: 'Rectangle', type: 'RECT', icon: 'fa-square-o', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
+                    { name: 'Circle or Ellipse', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
+                    { name: 'Straight Line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: { stroke: '#000', 'stroke-width': '1px' } },
                     {
-                        name: 'rect',
-                        type: 'RECT',
-                        icon: 'fa-square-o',
-                        attr: {},
-                        style: { fill: 'transparent', stroke: '#000' }
-                    },
-                    {
-                        name: 'circle',
-                        type: 'CIRCLE_OR_ELLIPSE',
-                        icon: 'fa-circle-o',
-                        attr: {},
-                        style: { fill: 'transparent', stroke: '#000' }
-                    },
-                    {
-                        name: 'line',
-                        type: 'STRAIGHT_LINE',
-                        icon: 'fa-minus',
-                        attr: {},
-                        style: { stroke: '#000', 'stroke-width': '1px' }
-                    },
-                    {
-                        name: 'text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
+                        name: 'Range Slider',
+                        type: 'RANGE_SLIDER',
+                        icon: 'fa-sliders',
+                        min: 10,
+                        max: 40,
+                        shapes: [
+                            { name: 'Range Slider Rectangle', type: 'RECT', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
+                            { name: 'Range Slider Line', type: 'RANGE_SLIDER_LINE', attr: {}, style: { 'stroke-width': '5px', stroke: '#000' } },
+                            { name: 'Range Slider Min', type: 'RANGE_SLIDER_MIN_ELLIPSE', attr: {}, style: { fill: 'red', stroke: '#000' } },
+                            { name: 'Range Slider Max', type: 'RANGE_SLIDER_MAX_ELLIPSE', attr: {}, style: { fill: 'red', stroke: '#000' } }
+                        ]
+                    }, {
+                        name: 'Text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
                         style: {
                             stroke: '#000',
                             'stroke-width': '1px',
@@ -81,7 +75,7 @@
                 };
 
                 $scope.fnUpdateProperties = function () {
-                   sketchbook.update($scope.sbData.metadata);
+                    sketchbook.update($scope.sbData.metadata);
                 };
                 /*----- END: Set and Update Property ------*/
 

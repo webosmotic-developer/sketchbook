@@ -39,10 +39,22 @@
                         case 'CIRCLE_OR_ELLIPSE':
                         case 'RECT':
                             d = _this.calShapeHW(d);
+                            _this.createShapePath(d3.select(this.parentNode), 'shape-path', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.shape-path'), d);
+                            break;
+                        case 'RANGE_SLIDER':
+                            d = _this.calShapeHW(d);
+                            d.handleSize = Math.min(d.height, d.width) * 0.1; // 10% of height or width
+                            var data = d.shapes.filter(function (o) {
+                                o.height = d.height;
+                                o.width = d.width;
+                                return o.type === 'RECT';
+                            })[0];
+                            rangeSliderLinearScale.range([d.handleSize, d.width - d.handleSize]);
+                            _this.createRangeSlider(d3.select(this.parentNode.parentNode), 'range-slider', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.rs-path'), data);
                             break;
                     }
-                    _this.createShapePath(d3.select(this.parentNode), 'shape-path', d);
-                    _this.updateResizeSelector(d3.select(this.parentNode).select('path.shape-path'), d);
                 }
             });
         var line = d3.svg.line()
@@ -52,12 +64,13 @@
             .y(function (d) {
                 return d[1];
             });
+        var rangeSliderLinearScale = d3.scale.linear().domain([0, 50]);
 
         _this.onMouseOverSvgEvent = function () {
             if (_this.shapeObj) {
                 _this.sbSvg.style('cursor', 'crosshair');
             }
-        };
+        }
 
         /**
          * Create svg mouse down event
@@ -96,6 +109,11 @@
                     case 'RECT':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         break;
+                    case 'RANGE_SLIDER':
+                        _this.shapeObj = _this.calShapeHW(_this.shapeObj);
+                        _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.1; // 10% of height or width
+                        rangeSliderLinearScale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
+                        break;
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
             }
@@ -109,8 +127,8 @@
         };
 
         /**
-         * Create svg mouse leave event
-         * */
+        * Create svg mouse leave event
+        * */
         _this.onMouseLeaveSvgEvent = function () {
             _this.ignoreSvgEvents();
         };
@@ -123,11 +141,11 @@
             _this.sbSvg.on('mouseup', null);
             _this.sbSvg.on('mouseleave', null);
             if (_this.shapeObj && _this.shapeObj.epX && _this.shapeObj.epY) {
-                _this.data.push(_this.clone(_this.shapeObj));
+                _this.data.push(_this.clone(_this.shapeObj));                
                 sketchbook.update(_this.data);
                 sketchbook.setShapeObj(null);
             }
-        };
+        }
 
         /**
          * Erase selection
@@ -180,30 +198,6 @@
             return copy;
         };
 
-        _this.fnHighlightShape = function (isCalledForHighlight, data, propertyObj) {
-            d3.selectAll('path.selection-path').remove();
-            d3.selectAll('circle.resize-circle').remove();
-            if (isCalledForHighlight) {
-                if (data.type !== 'TEXT') {
-                    if (data.type === 'ARC') {
-                        _this.updateResizeSelector(d3.select('#' + data.id).select('svg.shape-arc'), data);
-                    } else {
-                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
-                    }
-                }
-            } else if (propertyObj) {
-                if (propertyObj.type !== 'TEXT') {
-                    if (propertyObj.type === 'ARC') {
-                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('svg.shape-arc'),
-                            propertyObj);
-                    } else {
-                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
-                            propertyObj);
-                    }
-                }
-            }
-        };
-
         /**
          * Create shapes
          * @param ele - selection for append
@@ -227,9 +221,11 @@
                 .on('click', function (d) {
                     d3.event.stopPropagation();
                     _this.eraseResizeSelector();
-                    if (d.type !== 'TEXT') {
+                    if (d.type === 'RANGE_SLIDER') {                        
+                        _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
+                    } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
-                    }
+                    }                    
                     sketchbook.onShapeClickCallback(sketchbook.onShapeClick, d);
                 })
                 .call(shapeDrag);
@@ -243,6 +239,8 @@
             angular.forEach(data, function (d) {
                 if (d.type === 'TEXT') {
                     _this.createTextElem(shape, 'shape-text');
+                } else if (d.type === 'RANGE_SLIDER') {
+                    _this.createRangeSlider(shape, 'range-slider');
                 } else {
                     _this.createShapePath(shape, 'shape-path');
                 }
@@ -287,11 +285,11 @@
         };
 
         /**
-         * Create Input Text element
-         * @param select
-         * @param selectAll
-         * @param data
-         * */
+        * Create Input Text element
+        * @param select
+        * @param selectAll
+        * @param data
+        * */
         _this.createShapePath = function (select, selectAll, data) {
             var path = select.selectAll('path.' + selectAll).data(function (d) {
                 return data ? [data] : [d];
@@ -348,13 +346,83 @@
         };
 
         /**
+         * Create range slider
+         * @param select
+         * @param selectAll
+         * @param data
+         * */
+        _this.createRangeSlider = function (select, selectAll, data) {
+            var gRangeSlider = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.min = so.min;
+                            o.max = so.max;
+                            o.handleSize = so.handleSize;
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
+            });
+
+            // Enter
+            gRangeSlider.enter().append('g').attr('class', selectAll);
+
+            // Update
+            gRangeSlider.attr('class', selectAll);
+
+            var path = gRangeSlider.selectAll('path.rs-path')
+                .data(function (d) {
+                    return d.shapes ? d.shapes : [];
+                });
+
+            // Enter
+            path.enter().append('path')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'rs-path');
+
+            // Update
+            path
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                });
+
+            // Exit
+            path.exit().remove();
+
+            // Exit
+            gRangeSlider.exit().remove();
+        };
+
+        /**
          * Update attr for element
          * */
         _this.updateAttr = function (shapeObj) {
-            var h = 0, w = 0,
+            var h = 0, w = 0, r, rx, ry,
                 x = shapeObj.x ? shapeObj.x : 0,
                 y = shapeObj.y ? shapeObj.y : 0;
-            var fnCalcRectAttr = function (attr) {
+            var fnCalcRectAttr = function () {
+                var attr = {};
                 h = shapeObj.height;
                 w = shapeObj.width;
                 attr.x = x;
@@ -366,19 +434,34 @@
             };
             switch (shapeObj.type) {
                 case 'CIRCLE_OR_ELLIPSE':
-                    var r = Math.min(shapeObj.height, shapeObj.width) / 2;
-                    var rx = shapeObj.width; // Horizontal
-                    var ry = shapeObj.height; // Vertical
+                    r = Math.min(shapeObj.height, shapeObj.width) / 2;
+                    rx = shapeObj.width; // Horizontal
+                    ry = shapeObj.height; // Vertical
                     shapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
                         ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
                     break;
 
                 case 'RECT':
-                    shapeObj.attr = fnCalcRectAttr(shapeObj);
+                    shapeObj.attr = fnCalcRectAttr();
                     break;
 
                 case 'STRAIGHT_LINE':
                     shapeObj.attr.d = line([[0, 0], [shapeObj.epX - shapeObj.spX, shapeObj.epY - shapeObj.spY]]);
+                    break;
+
+                case 'RANGE_SLIDER_LINE':
+                    shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
+                    break;
+
+                case 'RANGE_SLIDER_MIN_ELLIPSE':
+                case 'RANGE_SLIDER_MAX_ELLIPSE':
+                    var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? rangeSliderLinearScale(shapeObj.min) : rangeSliderLinearScale(shapeObj.max));
+                    r = shapeObj.handleSize; // 10% of height or width
+                    rx = r; // Horizontal
+                    ry = r; // Vertical                    
+                    shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize) + ',' + shapeObj.height / 2 + ')';
+                    shapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
+                        ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
                     break;
 
                 case 'TEXT':
@@ -387,7 +470,7 @@
                     break;
 
                 case 'RESIZE_RECT':
-                    shapeObj.attr = fnCalcRectAttr(shapeObj);
+                    shapeObj.attr = fnCalcRectAttr();
                     shapeObj.style = {
                         'fill': 'rgb(93, 162, 255, 0.5)', 'stroke-linecap': 'square', 'stroke': '#5da2ff',
                         'stroke-linejoin': 'round', 'stroke-width': 2, 'stroke-dasharray': '5, 5'
@@ -418,27 +501,7 @@
             _this.sbSvg = d3.select(_this.parentEle).append('svg').attr('id', 'sb').attr('class', 'sb')
                 .on('mouseover', _this.onMouseOverSvgEvent)
                 .on('mousedown', _this.onMouseDownSvgEvent)
-                .on('click', function () {
-                    _this.eraseResizeSelector();
-                    sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
-                });
-            d3.select("body")
-                .on('keyup', function () {
-                    if(d3.event && d3.event.keyCode === 46) {
-                        var selectionPath = d3.select("#sb-container").selectAll("g").selectAll(".selection-path");
-                        angular.forEach(selectionPath, function (data) {
-                            if(data[0] && data[0].parentNode.__data__.id) {
-                                d3.select("#" + data[0].parentNode.__data__.id).remove();
-                                angular.forEach(_this.data, function (dataObj, index) {
-                                    if(dataObj.id === data[0].parentNode.__data__.id) {
-                                        _this.data.splice(index, 1);
-                                    }
-                                });
-                                sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
-                            }
-                        });
-                    }
-                });
+                .on('click', _this.eraseResizeSelector);
             _this.sbZoom = _this.sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
             _this.sbContainer = _this.sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
             _this.sbSelector = _this.sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
@@ -478,10 +541,6 @@
                 });
         };
 
-        Sketchbook.prototype.highlightShape = function (isCalledForHighlight, dataObj, propertyObj) {
-            _this.fnHighlightShape(isCalledForHighlight, dataObj, propertyObj);
-        };
-
         /**
          * Set Margin
          * @param margin
@@ -509,9 +568,6 @@
          * */
         Sketchbook.prototype.setShapeObj = function (shapeObj) {
             _this.shapeObj = shapeObj ? _this.clone(shapeObj) : null;
-            if(!shapeObj) {
-                sketchbook.removeSelectedShapeCallback(sketchbook.removeSelectedShape);
-            }
         };
 
         /**
@@ -526,20 +582,6 @@
          * On shape click event
          * */
         Sketchbook.prototype.onShapeClick = function () {
-        };
-
-        /**
-         * On shape click callback
-         * @param callback
-         * */
-        Sketchbook.prototype.removeSelectedShapeCallback = function (callback) {
-            callback(arguments[1]);
-        };
-
-        /**
-         * On shape click event
-         * */
-        Sketchbook.prototype.removeSelectedShape = function () {
         };
 
         /**
