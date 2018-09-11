@@ -11,15 +11,26 @@
             restrict: 'EA',
             scope: {},
             templateUrl: 'app/components/directives/sketchbook/sketchbook.html',
-            link: function ($scope, element) {           
+            link: function ($scope, element) {
                 var drawContainerEle = element[0].querySelector('#draw-container');
                 var drawContainerObj = angular.element(drawContainerEle)[0];
                 var sketchbook = new Sketchbook({
                     parentEle: drawContainerEle,
                     width:  drawContainerObj.clientWidth,
                     height:  drawContainerObj.clientHeight
-                })
-                
+                });
+
+                $scope.sortableOptions = {
+                    scrollSensitivity: 50,
+                    cursor: "move",
+                    update: function () {
+                    },
+                    stop: function () {
+                        //d3.select("#sb-container").selectAll("*").remove();
+                        sketchbook.orderShape($scope.sbData.metadata);
+                    }
+                };
+
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
                     {
@@ -55,8 +66,8 @@
                     }
                 ];
 
-                $scope.sbData = { data: {}, metadata: [] }; 
-                sketchbook.setData($scope.sbData.metadata);               
+                $scope.sbData = { data: {}, metadata: [] };
+                sketchbook.setData($scope.sbData.metadata);
 
 
                 /*----- START: Set and Update Property ------*/
@@ -73,6 +84,12 @@
                    sketchbook.update($scope.sbData.metadata);
                 };
                 /*----- END: Set and Update Property ------*/
+
+                /*----- START: Highlight Elements ------*/
+                $scope.fnHighlightShape = function (isCalledForHighlight, metaObj) {
+
+                };
+                /*----- END: Highlight Elements ------*/
 
                 $scope.fnSetSelectedShape = function (shapeObj) {
                     $scope.selectedShapeObj = shapeObj;

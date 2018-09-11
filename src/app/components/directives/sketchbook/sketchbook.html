@@ -100,12 +100,22 @@
                     </div>
                 </div>
             </div>
+            <div class="col-12 p-0 mt-2" ng-if="propertyObj">
+                <button type="button" class="btn btn-primary pull-right"
+                        ng-click="fnUpdateProperties()">
+                    Update Settings
+                </button>
+            </div>
         </div>
-        <div class="col-12 p-0 mt-2" ng-if="propertyObj">
-            <button type="button" class="btn btn-primary pull-right"
-                    ng-click="fnUpdateProperties()">
-                Update Settings
-            </button>
+        <div class="clearfix"></div>
+        <div class="col-12 p-0" ui-sortable="sortableOptions" ng-model="sbData.metadata">
+            <div class="col-12 p-0"
+                 ng-repeat="metadataObj in sbData.metadata track by $index"
+                 ng-mouseover="fnHighlightShape(true, metadataObj)"
+                 ng-mouseleave="fnHighlightShape(false, metadataObj)">
+                <i class="mr-2 fa" ng-class="metadataObj.icon"></i>
+                <label>{{metadataObj.name}}</label>
+            </div>
         </div>
     </div>
 

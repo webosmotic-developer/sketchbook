@@ -60,6 +60,7 @@
             d3.event.stopPropagation();
             if (d3.event.type === 'mousedown' && _this.shapeObj) {
                 _this.shapeObj.id = 'sb' + Date.now();
+                _this.shapeObj.zIndex = _this.data.length + 1;
                 var mPoint = d3.mouse(_this.sbSelector.node());
                 _this.shapeObj.spX = mPoint[0];
                 _this.shapeObj.spY = mPoint[1];
@@ -411,6 +412,18 @@
                 .attr('height', this.height + _this.margin.top + _this.margin.bottom);
             _this.sbContainer.attr('transform', 'translate(' + _this.margin.left + ',' + _this.margin.top + ')');
             _this.sbSelector.attr('transform', 'translate(' + _this.margin.left + ',' + _this.margin.top + ')');
+        };
+
+        Sketchbook.prototype.orderShape = function (data) {
+            angular.forEach(data, function (dataObj, index) {
+                dataObj.zIndex = index + 1;
+            });
+            this.update(data);
+            _this.sbContainer.selectAll('g.shape')
+                .sort(function (a, b) {
+                    if (a.zIndex < b.zIndex) return -1;
+                    else return 1;
+                });
         };
 
         /**
