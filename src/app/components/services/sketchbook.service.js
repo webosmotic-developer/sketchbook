@@ -200,6 +200,35 @@
             return copy;
         };
 
+        _this.fnHighlightShape = function (isCalledForHighlight, data, propertyObj) {
+            d3.selectAll('path.selection-path').remove();
+            d3.selectAll('circle.resize-circle').remove();
+            if (isCalledForHighlight) {
+                if (data.type !== 'TEXT') {
+                    if (data.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('svg.shape-arc'), data);
+                    } else if (data.type === 'RANGE_SLIDER') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
+                    } else {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
+                    }
+                }
+            } else if (propertyObj) {
+                if (propertyObj.type !== 'TEXT') {
+                    if (propertyObj.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('svg.shape-arc'),
+                            propertyObj);
+                    } else if (propertyObj.type === 'RANGE_SLIDER') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
+                            propertyObj);
+                    } else {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
+                            propertyObj);
+                    }
+                }
+            }
+        };
+
         /**
          * Create shapes
          * @param ele - selection for append
@@ -461,7 +490,7 @@
                     var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? shapeObj.scale(shapeObj.min) : shapeObj.scale(shapeObj.max));
                     r = shapeObj.handleSize; // 10% of height or width
                     rx = r; // Horizontal
-                    ry = r; // Vertical                    
+                    ry = r; // Vertical
                     shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize) + ',' + shapeObj.height / 2 + ')';
                     shapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
                         ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
@@ -504,7 +533,27 @@
             _this.sbSvg = d3.select(_this.parentEle).append('svg').attr('id', 'sb').attr('class', 'sb')
                 .on('mouseover', _this.onMouseOverSvgEvent)
                 .on('mousedown', _this.onMouseDownSvgEvent)
-                .on('click', _this.eraseResizeSelector);
+                .on('click', function () {
+                    _this.eraseResizeSelector();
+                    sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
+                });
+            d3.select("body")
+                .on('keyup', function () {
+                    if(d3.event && d3.event.keyCode === 46) {
+                        var selectionPath = d3.select("#sb-container").selectAll("g").selectAll(".selection-path");
+                        angular.forEach(selectionPath, function (data) {
+                            if(data[0] && data[0].parentNode.__data__.id) {
+                                d3.select("#" + data[0].parentNode.__data__.id).remove();
+                                angular.forEach(_this.data, function (dataObj, index) {
+                                    if(dataObj.id === data[0].parentNode.__data__.id) {
+                                        _this.data.splice(index, 1);
+                                    }
+                                });
+                                sketchbook.onShapeClickCallback(sketchbook.onShapeClick);
+                            }
+                        });
+                    }
+                });
             _this.sbZoom = _this.sbSvg.append('g').attr('id', 'sb-zoom').attr('class', 'sb-zoom');
             _this.sbContainer = _this.sbZoom.append('g').attr('id', 'sb-container').attr('class', 'sb-container');
             _this.sbSelector = _this.sbZoom.append('g').attr('id', 'sb-selector').attr('class', 'sb-selector');
@@ -544,6 +593,10 @@
                 });
         };
 
+        Sketchbook.prototype.highlightShape = function (isCalledForHighlight, dataObj, propertyObj) {
+            _this.fnHighlightShape(isCalledForHighlight, dataObj, propertyObj);
+        };
+
         /**
          * Set Margin
          * @param margin
@@ -571,6 +624,9 @@
          * */
         Sketchbook.prototype.setShapeObj = function (shapeObj) {
             _this.shapeObj = shapeObj ? _this.clone(shapeObj) : null;
+            if(!shapeObj) {
+                sketchbook.removeSelectedShapeCallback(sketchbook.removeSelectedShape);
+            }
         };
 
         /**
@@ -585,6 +641,20 @@
          * On shape click event
          * */
         Sketchbook.prototype.onShapeClick = function () {
+        };
+
+        /**
+         * On shape click callback
+         * @param callback
+         * */
+        Sketchbook.prototype.removeSelectedShapeCallback = function (callback) {
+            callback(arguments[1]);
+        };
+
+        /**
+         * On shape click event
+         * */
+        Sketchbook.prototype.removeSelectedShape = function () {
         };
 
         /**
