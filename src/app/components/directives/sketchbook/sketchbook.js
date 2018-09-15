@@ -49,6 +49,17 @@
                             { name: 'Range Slider Max', type: 'RANGE_SLIDER_MAX_ELLIPSE', attr: {}, style: { fill: 'red', stroke: '#000' } }
                         ]
                     }, {
+                        name: 'Arc',
+                        type: 'ARC',
+                        icon: 'fa-pie-chart',
+                        angle: 60,
+                        radius: 10,
+                        orientation: 'left',
+                        shapes: [
+                            { name: 'Outer Arc', type: 'OUTER_ARC', attr: {}, style: { fill: '#000' } },
+                            { name: 'Main Arc', type: 'MAIN_ARC', attr: {}, style: { fill: 'red' } }
+                        ]
+                    }, {
                         name: 'Text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
                         style: {
                             stroke: '#000',

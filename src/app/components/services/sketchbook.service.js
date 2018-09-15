@@ -54,6 +54,11 @@
                             _this.createRangeSlider(d3.select(this.parentNode.parentNode), 'range-slider', d);
                             _this.updateResizeSelector(d3.select(this.parentNode).select('path.rs-path'), data);
                             break;
+                        case 'ARC':
+                            d = _this.calShapeHW(d);
+                            _this.createArcShape(d3.select(this.parentNode.parentNode), 'shape-arc', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.arc-path'), d);
+                            break;
                     }
                 }
             });
@@ -116,6 +121,9 @@
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.1; // 10% of height or width
                         _this.shapeObj.scale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
                         break;
+                    case 'ARC':
+                        _this.shapeObj = _this.calShapeHW(_this.shapeObj);
+                        break;
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
             }
@@ -129,8 +137,8 @@
         };
 
         /**
-        * Create svg mouse leave event
-        * */
+         * Create svg mouse leave event
+         * */
         _this.onMouseLeaveSvgEvent = function () {
             _this.ignoreSvgEvents();
         };
@@ -205,21 +213,21 @@
             d3.selectAll('circle.resize-circle').remove();
             if (isCalledForHighlight) {
                 if (data.type !== 'TEXT') {
-                    if (data.type === 'ARC') {
-                        _this.updateResizeSelector(d3.select('#' + data.id).select('svg.shape-arc'), data);
-                    } else if (data.type === 'RANGE_SLIDER') {
+                    if (data.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
+                    } else if (data.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.arc-path'), data);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
                     }
                 }
             } else if (propertyObj) {
                 if (propertyObj.type !== 'TEXT') {
-                    if (propertyObj.type === 'ARC') {
-                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('svg.shape-arc'),
+                    if (propertyObj.type === 'RANGE_SLIDER') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
                             propertyObj);
                     } else if (propertyObj.type === 'RANGE_SLIDER') {
-                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.arc-path'),
                             propertyObj);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
@@ -254,6 +262,8 @@
                     _this.eraseResizeSelector();
                     if (d.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
+                    } else if (d.type === 'ARC') {
+                        _this.updateResizeSelector(d3.select(this).select('path.arc-path'), d);
                     } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
                     }
@@ -272,6 +282,8 @@
                     _this.createTextElem(shape, 'shape-text');
                 } else if (d.type === 'RANGE_SLIDER') {
                     _this.createRangeSlider(shape, 'range-slider');
+                } else if (d.type === 'ARC') {
+                    _this.createArcShape(shape, 'shape-arc');
                 } else {
                     _this.createShapePath(shape, 'shape-path');
                 }
@@ -316,11 +328,11 @@
         };
 
         /**
-        * Create Input Text element
-        * @param select
-        * @param selectAll
-        * @param data
-        * */
+         * Create Input Text element
+         * @param select
+         * @param selectAll
+         * @param data
+         * */
         _this.createShapePath = function (select, selectAll, data) {
             var path = select.selectAll('path.' + selectAll).data(function (d) {
                 return data ? [data] : [d];
@@ -374,6 +386,75 @@
 
             // Exit
             circle.exit().remove();
+        };
+
+        /**
+         * Create range slider
+         * @param select
+         * @param selectAll
+         * @param data
+         * */
+        _this.createArcShape = function (select, selectAll, data) {
+            var gArc = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.angle = so.angle;
+                            o.radius = so.radius;
+                            o.orientation = so.orientation;
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
+            });
+
+            // Enter
+            gArc.enter().append('g').attr('class', selectAll);
+
+            // Update
+            gArc.attr('class', selectAll);
+
+            var path = gArc.selectAll('path.arc-path')
+                .data(function (d) {
+                    return d.shapes ? d.shapes : [];
+                });
+
+            // Enter
+            path.enter().append('path')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'arc-path');
+
+            // Update
+            path
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                });
+
+            // Exit
+            path.exit().remove();
+
+            // Exit
+            gArc.exit().remove();
         };
 
         /**
@@ -501,6 +582,31 @@
                     shapeObj.attr.y = shapeObj.epY - shapeObj.spY;
                     break;
 
+                case 'OUTER_ARC':
+                case 'MAIN_ARC':
+                    var outerRadius = Math.max(shapeObj.width, shapeObj.height);
+                    var innerRadius = outerRadius - shapeObj.radius;
+                    var startAngle, endAngle;
+                    if (shapeObj.orientation === 'left') {
+                        endAngle = -Math.PI / 2;
+                        startAngle = endAngle + (Math.PI * (shapeObj.angle / 100));
+                    } else {
+                        endAngle = Math.PI / 2;
+                        startAngle = endAngle - (Math.PI * (shapeObj.angle / 100));
+                    }
+
+                    var arc = d3.svg.arc()
+                        .innerRadius(innerRadius)
+                        .outerRadius(outerRadius)
+                        .startAngle(function () {
+                            return shapeObj.type === 'OUTER_ARC' ? -endAngle : startAngle;
+                        })
+                        .endAngle(function () {
+                            return endAngle;
+                        });
+                    shapeObj.attr.d = arc(shapeObj);
+                    break;
+
                 case 'RESIZE_RECT':
                     shapeObj.attr = fnCalcRectAttr();
                     shapeObj.style = {
@@ -539,13 +645,13 @@
                 });
             d3.select("body")
                 .on('keyup', function () {
-                    if(d3.event && d3.event.keyCode === 46) {
+                    if (d3.event && d3.event.keyCode === 46) {
                         var selectionPath = d3.select("#sb-container").selectAll("g").selectAll(".selection-path");
                         angular.forEach(selectionPath, function (data) {
-                            if(data[0] && data[0].parentNode.__data__.id) {
+                            if (data[0] && data[0].parentNode.__data__.id) {
                                 d3.select("#" + data[0].parentNode.__data__.id).remove();
                                 angular.forEach(_this.data, function (dataObj, index) {
-                                    if(dataObj.id === data[0].parentNode.__data__.id) {
+                                    if (dataObj.id === data[0].parentNode.__data__.id) {
                                         _this.data.splice(index, 1);
                                     }
                                 });
@@ -624,7 +730,7 @@
          * */
         Sketchbook.prototype.setShapeObj = function (shapeObj) {
             _this.shapeObj = shapeObj ? _this.clone(shapeObj) : null;
-            if(!shapeObj) {
+            if (!shapeObj) {
                 sketchbook.removeSelectedShapeCallback(sketchbook.removeSelectedShape);
             }
         };
