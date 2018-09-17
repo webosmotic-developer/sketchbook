@@ -59,6 +59,11 @@
                             _this.createArcShape(d3.select(this.parentNode.parentNode), 'shape-arc', d);
                             _this.updateResizeSelector(d3.select(this.parentNode).select('path.arc-path'), d);
                             break;
+                        case 'ICON':
+                            d = _this.calShapeHW(d);
+                            _this.createIconShape(d3.select(this.parentNode.parentNode), 'shape-icon', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('foreignObject.icon-path'), d);
+                            break;
                     }
                 }
             });
@@ -114,15 +119,14 @@
                 switch (_this.shapeObj.type) {
                     case 'CIRCLE_OR_ELLIPSE':
                     case 'RECT':
+                    case 'ARC':
+                    case 'ICON':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         break;
                     case 'RANGE_SLIDER':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.1; // 10% of height or width
                         _this.shapeObj.scale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
-                        break;
-                    case 'ARC':
-                        _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         break;
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
@@ -217,6 +221,8 @@
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
                     } else if (data.type === 'ARC') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.arc-path'), data);
+                    } else if (data.type === 'ICON') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('foreignObject.icon-path'), data);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
                     }
@@ -228,6 +234,9 @@
                             propertyObj);
                     } else if (propertyObj.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.arc-path'),
+                            propertyObj);
+                    } else if (propertyObj.type === 'ICON') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('foreignObject.icon-path'),
                             propertyObj);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
@@ -264,6 +273,8 @@
                         _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
                     } else if (d.type === 'ARC') {
                         _this.updateResizeSelector(d3.select(this).select('path.arc-path'), d);
+                    } else if (d.type === 'ICON') {
+                        _this.updateResizeSelector(d3.select(this).select('foreignObject.icon-path'), d);
                     } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
                     }
@@ -284,6 +295,8 @@
                     _this.createRangeSlider(shape, 'range-slider');
                 } else if (d.type === 'ARC') {
                     _this.createArcShape(shape, 'shape-arc');
+                } else if (d.type === 'ICON') {
+                    _this.createIconShape(shape, 'shape-icon');
                 } else {
                     _this.createShapePath(shape, 'shape-path');
                 }
@@ -325,6 +338,76 @@
 
             // Exit
             text.exit().remove();
+        };
+
+        /**
+         * Create Icon element
+         * @param select
+         * @param selectAll
+         * @param data
+         * */
+        _this.createIconShape = function (select, selectAll, data) {
+            var gForeignObj = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.valueIcon = so.valueIcon;
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
+            });
+
+            // Enter
+            gForeignObj.enter().append('g').attr('class', selectAll);
+
+            // Update
+            gForeignObj.attr('class', selectAll);
+
+            var path = gForeignObj.selectAll('foreignObject.icon-path')
+                .data(function (d) {
+                    return d.shapes ? d.shapes : [];
+                });
+
+            // Enter
+            path.enter().append('foreignObject')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'icon-path');
+
+            // Update
+            path
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.html) {
+                        element.html(d.html);
+                    }
+                });
+
+            // Exit
+            path.exit().remove();
+
+            // Exit
+            gForeignObj.exit().remove();
         };
 
         /**
@@ -613,6 +696,11 @@
                         'fill': 'rgb(93, 162, 255, 0.5)', 'stroke-linecap': 'square', 'stroke': '#5da2ff',
                         'stroke-linejoin': 'round', 'stroke-width': 2, 'stroke-dasharray': '5, 5'
                     };
+                    break;
+                case 'FOREIGN_OBJECT_ICON':
+                    shapeObj.attr.height = shapeObj.height;
+                    shapeObj.attr.width = shapeObj.width;
+                    shapeObj.html = '<i class="fa '+ shapeObj.valueIcon +'" style="font-size: '+ Math.max(shapeObj.height, shapeObj.width) +'px"></i>';
                     break;
             }
             return shapeObj;

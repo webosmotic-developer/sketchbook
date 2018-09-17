@@ -33,9 +33,27 @@
 
                 $scope.selectedShapeObj = null;
                 $scope.shapesArr = [
-                    { name: 'Rectangle', type: 'RECT', icon: 'fa-square-o', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
-                    { name: 'Circle or Ellipse', type: 'CIRCLE_OR_ELLIPSE', icon: 'fa-circle-o', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
-                    { name: 'Straight Line', type: 'STRAIGHT_LINE', icon: 'fa-minus', attr: {}, style: { stroke: '#000', 'stroke-width': '1px' } },
+                    {
+                        name: 'Rectangle',
+                        type: 'RECT',
+                        icon: 'fa-square-o',
+                        attr: {},
+                        style: {fill: 'transparent', stroke: '#000'}
+                    },
+                    {
+                        name: 'Circle or Ellipse',
+                        type: 'CIRCLE_OR_ELLIPSE',
+                        icon: 'fa-circle-o',
+                        attr: {},
+                        style: {fill: 'transparent', stroke: '#000'}
+                    },
+                    {
+                        name: 'Straight Line',
+                        type: 'STRAIGHT_LINE',
+                        icon: 'fa-minus',
+                        attr: {},
+                        style: {stroke: '#000', 'stroke-width': '1px'}
+                    },
                     {
                         name: 'Range Slider',
                         type: 'RANGE_SLIDER',
@@ -43,10 +61,30 @@
                         min: 10,
                         max: 40,
                         shapes: [
-                            { name: 'Range Slider Rectangle', type: 'RECT', attr: {}, style: { fill: 'transparent', stroke: '#000' } },
-                            { name: 'Range Slider Line', type: 'RANGE_SLIDER_LINE', attr: {}, style: { 'stroke-width': '5px', stroke: '#000' } },
-                            { name: 'Range Slider Min', type: 'RANGE_SLIDER_MIN_ELLIPSE', attr: {}, style: { fill: 'red', stroke: '#000' } },
-                            { name: 'Range Slider Max', type: 'RANGE_SLIDER_MAX_ELLIPSE', attr: {}, style: { fill: 'red', stroke: '#000' } }
+                            {
+                                name: 'Range Slider Rectangle',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'transparent', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Line',
+                                type: 'RANGE_SLIDER_LINE',
+                                attr: {},
+                                style: {'stroke-width': '5px', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Min',
+                                type: 'RANGE_SLIDER_MIN_ELLIPSE',
+                                attr: {},
+                                style: {fill: 'red', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Max',
+                                type: 'RANGE_SLIDER_MAX_ELLIPSE',
+                                attr: {},
+                                style: {fill: 'red', stroke: '#000'}
+                            }
                         ]
                     }, {
                         name: 'Arc',
@@ -56,8 +94,8 @@
                         radius: 10,
                         orientation: 'left',
                         shapes: [
-                            { name: 'Outer Arc', type: 'OUTER_ARC', attr: {}, style: { fill: '#000' } },
-                            { name: 'Main Arc', type: 'MAIN_ARC', attr: {}, style: { fill: 'red' } }
+                            {name: 'Outer Arc', type: 'OUTER_ARC', attr: {}, style: {fill: '#000'}},
+                            {name: 'Main Arc', type: 'MAIN_ARC', attr: {}, style: {fill: 'red'}}
                         ]
                     }, {
                         name: 'Text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
@@ -68,10 +106,21 @@
                             'font-size': 40,
                             'font-family': 'sans-serif'
                         }
+                    },{
+                        name: 'Icon',
+                        type: 'ICON',
+                        icon: 'fa-font-awesome',
+                        valueIcon: 'fa-times',
+                        attr: {},
+                        style: {fill: '#000', stroke: '#000'},
+                        shapes: [
+                            {name: 'Foreign Object Icon', type: 'FOREIGN_OBJECT_ICON',
+                             attr: {}, style: {fill: '#000'}}
+                        ]
                     }
                 ];
 
-                $scope.sbData = { data: {}, metadata: [] };
+                $scope.sbData = {data: {}, metadata: []};
                 sketchbook.setData($scope.sbData.metadata);
 
 
