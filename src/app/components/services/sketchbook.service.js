@@ -64,6 +64,17 @@
                             _this.createIconShape(d3.select(this.parentNode.parentNode), 'shape-icon', d);
                             _this.updateResizeSelector(d3.select(this.parentNode).select('foreignObject.icon-path'), d);
                             break;
+                        case 'HEALTH':
+                            d = _this.calShapeHW(d);
+                            d.handleSize = Math.min(d.height, d.width) * 0.35; // 35% of height or width
+                            var healthData = d.shapes.filter(function (o) {
+                                o.height = d.height;
+                                o.width = d.width;
+                                return o.type === 'RECT';
+                            })[0];
+                            _this.createHealthShape(d3.select(this.parentNode.parentNode), 'shape-health', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.health-path'), healthData);
+                            break;
                     }
                 }
             });
@@ -127,6 +138,10 @@
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.1; // 10% of height or width
                         _this.shapeObj.scale.range([_this.shapeObj.handleSize, _this.shapeObj.width - _this.shapeObj.handleSize]);
+                        break;
+                    case 'HEALTH':
+                        _this.shapeObj = _this.calShapeHW(_this.shapeObj);
+                        _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.35; // 35% of height or width
                         break;
                 }
                 _this.createShapes(_this.sbSelector, [_this.shapeObj]);
@@ -219,6 +234,8 @@
                 if (data.type !== 'TEXT') {
                     if (data.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
+                    } else if (data.type === 'HEALTH') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.health-path'), data);
                     } else if (data.type === 'ARC') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.arc-path'), data);
                     } else if (data.type === 'ICON') {
@@ -231,6 +248,9 @@
                 if (propertyObj.type !== 'TEXT') {
                     if (propertyObj.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
+                            propertyObj);
+                    } else if (propertyObj.type === 'HEALTH') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.health-path'),
                             propertyObj);
                     } else if (propertyObj.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.arc-path'),
@@ -271,6 +291,8 @@
                     _this.eraseResizeSelector();
                     if (d.type === 'RANGE_SLIDER') {
                         _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
+                    } else if (d.type === 'HEALTH') {
+                        _this.updateResizeSelector(d3.select(this).select('path.health-path'), d);
                     } else if (d.type === 'ARC') {
                         _this.updateResizeSelector(d3.select(this).select('path.arc-path'), d);
                     } else if (d.type === 'ICON') {
@@ -293,6 +315,8 @@
                     _this.createTextElem(shape, 'shape-text');
                 } else if (d.type === 'RANGE_SLIDER') {
                     _this.createRangeSlider(shape, 'range-slider');
+                } else if (d.type === 'HEALTH') {
+                    _this.createHealthShape(shape, 'shape-health');
                 } else if (d.type === 'ARC') {
                     _this.createArcShape(shape, 'shape-arc');
                 } else if (d.type === 'ICON') {
@@ -610,6 +634,103 @@
             gRangeSlider.exit().remove();
         };
 
+        _this.createHealthShape = function (select, selectAll, data) {
+            var gHealth = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.min = so.min;
+                            o.max = so.max;
+                            o.handleSize = so.handleSize;
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
+            });
+
+            // Enter
+            gHealth.enter().append('g').attr('class', selectAll);
+
+            // Update
+            gHealth.attr('class', selectAll);
+
+            var path = gHealth.selectAll('path.health-path')
+                .data(function (d) {
+                    return d.shapes ? [d.shapes[0]] : [];
+                });
+
+            // Enter
+            path.enter().append('path')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'health-path');
+
+            // Update
+            path
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            path.exit().remove();
+
+            var hText = gHealth.selectAll('text.health-text')
+                .data(function (d) {
+                    return d.shapes ? [d.shapes[1]] : [];
+                });
+
+            // Enter
+            hText.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'health-text');
+
+            // Update
+            hText
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            hText.exit().remove();
+
+            // Exit
+            gHealth.exit().remove();
+        };
+
         /**
          * Update attr for element
          * */
@@ -665,6 +786,12 @@
                     shapeObj.attr.y = shapeObj.epY - shapeObj.spY;
                     break;
 
+                case 'Health_Text':
+                    shapeObj.attr.x = shapeObj.width / 2;
+                    shapeObj.attr.y = shapeObj.height / 2;
+                    shapeObj.style['font-size'] = shapeObj.handleSize;
+                    break;
+
                 case 'OUTER_ARC':
                 case 'MAIN_ARC':
                     var outerRadius = Math.max(shapeObj.width, shapeObj.height);
@@ -700,7 +827,7 @@
                 case 'FOREIGN_OBJECT_ICON':
                     shapeObj.attr.height = shapeObj.height;
                     shapeObj.attr.width = shapeObj.width;
-                    shapeObj.html = '<i class="fa '+ shapeObj.valueIcon +'" style="font-size: '+ Math.max(shapeObj.height, shapeObj.width) +'px"></i>';
+                    shapeObj.html = '<i class="fa ' + shapeObj.valueIcon + '" style="font-size: ' + Math.max(shapeObj.height, shapeObj.width) + 'px"></i>';
                     break;
             }
             return shapeObj;

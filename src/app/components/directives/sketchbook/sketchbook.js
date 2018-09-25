@@ -106,7 +106,7 @@
                             'font-size': 40,
                             'font-family': 'sans-serif'
                         }
-                    },{
+                    }, {
                         name: 'Icon',
                         type: 'ICON',
                         icon: 'fa-font-awesome',
@@ -114,8 +114,37 @@
                         attr: {},
                         style: {fill: '#000', stroke: '#000'},
                         shapes: [
-                            {name: 'Foreign Object Icon', type: 'FOREIGN_OBJECT_ICON',
-                             attr: {}, style: {fill: '#000'}}
+                            {
+                                name: 'Foreign Object Icon', type: 'FOREIGN_OBJECT_ICON',
+                                attr: {}, style: {fill: '#000'}
+                            }
+                        ]
+                    }, {
+                        name: 'Health',
+                        type: 'HEALTH',
+                        icon: 'fa-heartbeat',
+                        healthCode: 200,
+                        attr: {},
+                        style: {},
+                        shapes: [
+                            {
+                                name: 'Health Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'green'}
+                            }, {
+                                name: 'Health Text',
+                                type: 'Health_Text',
+                                text: 'OK',
+                                attr: {},
+                                style: {
+                                    stroke: '#000',
+                                    'stroke-width': '1px',
+                                    'text-anchor': 'middle',
+                                    "dominant-baseline": "central",
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'}
+                            }
                         ]
                     }
                 ];
