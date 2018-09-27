@@ -326,19 +326,19 @@
 
             angular.forEach(data, function (d) {
                 if (d.type === 'TEXT') {
-                    _this.createTextElem(d3.select("g#"+d.id), 'shape-text');
+                    _this.createTextElem(d3.select("g#" + d.id), 'shape-text');
                 } else if (d.type === 'RANGE_SLIDER') {
-                    _this.createRangeSlider(d3.select("g#"+d.id), 'range-slider');
+                    _this.createRangeSlider(d3.select("g#" + d.id), 'range-slider');
                 } else if (d.type === 'HEALTH') {
-                    _this.createHealthShape(d3.select("g#"+d.id), 'shape-health');
+                    _this.createHealthShape(d3.select("g#" + d.id), 'shape-health');
                 } else if (d.type === 'ARC') {
-                    _this.createArcShape(d3.select("g#"+d.id), 'shape-arc');
+                    _this.createArcShape(d3.select("g#" + d.id), 'shape-arc');
                 } else if (d.type === 'ICON') {
-                    _this.createIconShape(d3.select("g#"+d.id), 'shape-icon');
+                    _this.createIconShape(d3.select("g#" + d.id), 'shape-icon');
                 } else if (d.type === 'STACK') {
-                    _this.createStackChart(d3.select("g#"+d.id), 'stack-chart');
-                } else{
-                    _this.createShapePath(d3.select("g#"+d.id), 'shape-path');
+                    _this.createStackChart(d3.select("g#" + d.id), 'stack-chart');
+                } else {
+                    _this.createShapePath(d3.select("g#" + d.id), 'shape-path');
                 }
             });
 
@@ -897,6 +897,11 @@
                 case 'RANGE_SLIDER_LINE':
                     shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
                     break;
+                case 'RANGE_SLIDER_LINE_COLOR':
+                    var min = shapeObj.scale(shapeObj.min);
+                    var max = shapeObj.scale(shapeObj.max);
+                    shapeObj.attr.d = line([[(min - shapeObj.handleSize) + shapeObj.handleSize * 2, (shapeObj.height / 2)], [(max + shapeObj.handleSize) - shapeObj.handleSize * 2, shapeObj.height / 2]]);
+                    break;
 
                 case 'RANGE_SLIDER_MIN_ELLIPSE':
                 case 'RANGE_SLIDER_MAX_ELLIPSE':
@@ -904,9 +909,12 @@
                     r = shapeObj.handleSize; // 10% of height or width
                     rx = r; // Horizontal
                     ry = r; // Vertical
-                    shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize) + ',' + shapeObj.height / 2 + ')';
-                    shapeObj.attr.d = 'M' + -(rx - r) + ',0a' + rx + ',' + ry +
-                        ' 0 1,0 ' + (rx * 2) + ',0a' + rx + ',' + ry + ' 0 1,0 ' + -(rx * 2) + ',0';
+                    if (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE') {
+                        shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize + r) + ',' + ((shapeObj.height / 2) - r) + ')';
+                    } else {
+                        shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize) + ',' + ((shapeObj.height / 2) - r) + ')';
+                    }
+                    shapeObj.attr.d = "M 0, 0 h " + (rx * 2 / 2) + " v " + (ry * 2) + " h -" + (rx * 2 / 2) + " v -" + ry * 2 + " z";
                     break;
 
                 case 'TEXT':

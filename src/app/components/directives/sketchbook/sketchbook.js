@@ -58,7 +58,7 @@
                         name: 'Range Slider',
                         type: 'RANGE_SLIDER',
                         icon: 'fa-sliders',
-                        min: 10,
+                        min: 20,
                         max: 40,
                         shapes: [
                             {
@@ -71,19 +71,25 @@
                                 name: 'Range Slider Line',
                                 type: 'RANGE_SLIDER_LINE',
                                 attr: {},
-                                style: {'stroke-width': '5px', stroke: '#000'}
+                                style: {'stroke-width': '15px', stroke: '#ff700b','stroke-linecap':"round"}
                             },
                             {
                                 name: 'Range Slider Min',
                                 type: 'RANGE_SLIDER_MIN_ELLIPSE',
                                 attr: {},
-                                style: {fill: 'red', stroke: '#000'}
+                                style: {fill: '#fff', stroke: '#000'}
                             },
                             {
                                 name: 'Range Slider Max',
                                 type: 'RANGE_SLIDER_MAX_ELLIPSE',
                                 attr: {},
-                                style: {fill: 'red', stroke: '#000'}
+                                style: {fill: '#fff', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Line Color',
+                                type: 'RANGE_SLIDER_LINE_COLOR',
+                                attr: {},
+                                style: {'stroke-width': '15px', stroke: '#228B22'}
                             }
                         ]
                     }, {
