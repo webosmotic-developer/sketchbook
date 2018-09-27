@@ -75,6 +75,12 @@
                             _this.createHealthShape(d3.select(this.parentNode.parentNode), 'shape-health', d);
                             _this.updateResizeSelector(d3.select(this.parentNode).select('path.health-path'), healthData);
                             break;
+                        case 'STACK':
+                            d = _this.calShapeHW(d);
+                            _this.createStackChart(d3.select(this.parentNode.parentNode), 'stack-chart', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('g.stack-chart'), d);
+                            break;
+
                     }
                 }
             });
@@ -132,6 +138,7 @@
                     case 'RECT':
                     case 'ARC':
                     case 'ICON':
+                    case 'STACK':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         break;
                     case 'RANGE_SLIDER':
@@ -240,6 +247,8 @@
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.arc-path'), data);
                     } else if (data.type === 'ICON') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('foreignObject.icon-path'), data);
+                    } else if (data.type === 'STACK') {
+                        _this.updateResizeSelector(d3.select('#' + data.id).select('g.stack-chart'), data);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
                     }
@@ -257,6 +266,9 @@
                             propertyObj);
                     } else if (propertyObj.type === 'ICON') {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('foreignObject.icon-path'),
+                            propertyObj);
+                    } else if (propertyObj.type === 'STACK') {
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('g.stack-chart'),
                             propertyObj);
                     } else {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
@@ -297,6 +309,8 @@
                         _this.updateResizeSelector(d3.select(this).select('path.arc-path'), d);
                     } else if (d.type === 'ICON') {
                         _this.updateResizeSelector(d3.select(this).select('foreignObject.icon-path'), d);
+                    } else if (d.type === 'STACK') {
+                        _this.updateResizeSelector(d3.select(this).select('g.stack-chart'), d);
                     } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
                     }
@@ -312,17 +326,19 @@
 
             angular.forEach(data, function (d) {
                 if (d.type === 'TEXT') {
-                    _this.createTextElem(shape, 'shape-text');
+                    _this.createTextElem(d3.select("g#"+d.id), 'shape-text');
                 } else if (d.type === 'RANGE_SLIDER') {
-                    _this.createRangeSlider(shape, 'range-slider');
+                    _this.createRangeSlider(d3.select("g#"+d.id), 'range-slider');
                 } else if (d.type === 'HEALTH') {
-                    _this.createHealthShape(shape, 'shape-health');
+                    _this.createHealthShape(d3.select("g#"+d.id), 'shape-health');
                 } else if (d.type === 'ARC') {
-                    _this.createArcShape(shape, 'shape-arc');
+                    _this.createArcShape(d3.select("g#"+d.id), 'shape-arc');
                 } else if (d.type === 'ICON') {
-                    _this.createIconShape(shape, 'shape-icon');
-                } else {
-                    _this.createShapePath(shape, 'shape-path');
+                    _this.createIconShape(d3.select("g#"+d.id), 'shape-icon');
+                } else if (d.type === 'STACK') {
+                    _this.createStackChart(d3.select("g#"+d.id), 'stack-chart');
+                } else{
+                    _this.createShapePath(d3.select("g#"+d.id), 'shape-path');
                 }
             });
 
@@ -731,6 +747,118 @@
             gHealth.exit().remove();
         };
 
+        _this.createStackChart = function (select, selectAll, data) {
+            var orientation = '';
+            var gRangeSlider = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            orientation = so.orientation;
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.min = so.min;
+                            o.max = so.max;
+                            o.stack = [so.value];
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
+            });
+
+            // Enter
+            gRangeSlider.enter().append('g').attr('class', selectAll);
+            // Update
+            gRangeSlider.attr('class', selectAll);
+
+            var parentG = gRangeSlider.selectAll('g.parentG').data(function (d) {
+                return [d];
+            });
+            parentG.enter().append("g");
+            parentG.attr('class', 'parentG');
+            parentG.exit().remove();
+            var color = d3.scale.category20c();
+            var bgRect = parentG.selectAll('rect.bg-rect').data(function (d) {
+                return [d];
+            });
+            bgRect.enter().append("rect");
+            bgRect.attr('class', 'bg-rect')
+                .attr("width", function (d) {
+                    return d.width && d.width > 0 ? d.width : 0;
+                })
+                .attr("height", function (d) {
+                    return d.height && d.height > 0 ? d.height : 0;
+                })
+                .attr("fill", function () {
+                    return '#808080';
+                });
+            bgRect.exit().remove();
+            var bar = parentG
+                .selectAll("g.stack-bar")
+                .data(function (d) {
+                    var arry = [];
+                    d.shapes[0].stack.forEach(function (c) {
+                        arry.push({value: c, parent: d})
+                    });
+                    return arry;
+                });
+            bar.enter().append("g").attr("class", "stack-bar").append("rect");
+            bar.exit().remove();
+            if (orientation === "horizontal") {
+                bar.select('rect')
+                    .attr("width", function (d) {
+                        var scale = d3.scale.linear().range([0, d.parent.width]).domain([d.parent.min, d.parent.max]);
+                        return scale(d.value);
+                    })
+                    .attr("x", function (d, i) {
+                        var scale = d3.scale.linear().range([0, d.parent.width]).domain([d.parent.min, d.parent.max]);
+                        var total = 0;
+                        d.parent.shapes[0].stack.forEach(function (d, j) {
+                            if (i > 0 && j < i - 1) {
+                                total = total + d;
+                            }
+                        });
+                        return i === 0 ? 0 : scale(total)
+                    })
+                    .attr("height", function (d) {
+                        return d.parent.height && d.parent.height > 0 ? d.parent.height : 0;
+                    })
+                    .attr("fill", function (d) {
+                        return (color(d.value))
+                    });
+            } else {
+                bar.select('rect')
+                    .attr("width", function (d) {
+                        return d.parent.width && d.parent.width > 0 ? d.parent.width : 0;
+                    })
+                    .attr("x", function () {
+                        return 0;
+                    })
+                    .attr("y", function (d) {
+                        var scale = d3.scale.linear().range([0, d.parent.height]).domain([d.parent.min, d.parent.max]);
+                        return d.parent.height - scale(d.value);
+                    })
+                    .attr("height", function (d) {
+                        var scale = d3.scale.linear().range([0, d.parent.height]).domain([d.parent.min, d.parent.max]);
+                        return scale(d.value);
+                    })
+                    .attr("fill", function (d) {
+                        return (color(d.value))
+                    });
+            }
+
+            // Exit
+            gRangeSlider.exit().remove();
+        };
+
         /**
          * Update attr for element
          * */
@@ -828,6 +956,10 @@
                     shapeObj.attr.height = shapeObj.height;
                     shapeObj.attr.width = shapeObj.width;
                     shapeObj.html = '<i class="fa ' + shapeObj.valueIcon + '" style="font-size: ' + Math.max(shapeObj.height, shapeObj.width) + 'px"></i>';
+                    break;
+                case 'STACK-CHART':
+                    shapeObj.attr.height = shapeObj.height;
+                    shapeObj.attr.width = shapeObj.width;
                     break;
             }
             return shapeObj;

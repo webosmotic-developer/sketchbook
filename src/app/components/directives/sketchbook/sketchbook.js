@@ -146,6 +146,18 @@
                                     'font-family': 'sans-serif'}
                             }
                         ]
+                    },
+                    {
+                        name: 'Stack',
+                        type: 'STACK',
+                        icon: 'fa-bar-chart',
+                        value: 90,
+                        min: 1,
+                        max: 100,
+                        orientation: 'vertical', //vertical and horizontal
+                        shapes: [
+                            {name: 'stack', type: 'STACK-CHART', attr: {}, style: {fill: '#000'}}
+                        ]
                     }
                 ];
 
