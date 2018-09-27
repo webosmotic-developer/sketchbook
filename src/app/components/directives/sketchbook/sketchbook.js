@@ -182,7 +182,7 @@
                 };
 
                 $scope.fnUpdateProperties = function () {
-                    sketchbook.update($scope.sbData.metadata);
+                    sketchbook.update($scope.sbData.metadata, $scope.propertyObj);
                 };
                 /*----- END: Set and Update Property ------*/
 

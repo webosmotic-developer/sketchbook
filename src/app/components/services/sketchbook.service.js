@@ -6,7 +6,7 @@
         .factory('Sketchbook', fnSketchbookFactory);
 
     /** @ngInject */
-    function fnSketchbookFactory(d3) {
+    function fnSketchbookFactory(d3, $timeout) {
 
         var _this = this;
         var sketchbook;
@@ -1025,8 +1025,27 @@
          * Update sketchbook
          * @param data
          * */
-        Sketchbook.prototype.update = function (data) {
+        Sketchbook.prototype.update = function (data, propertyObj) {
             _this.createShapes(_this.sbContainer, data);
+            $timeout(function () {
+                if (propertyObj) {
+                    if (propertyObj.type !== 'TEXT') {
+                        if (propertyObj.type === 'RANGE_SLIDER') {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'), propertyObj);
+                        } else if (propertyObj.type === 'HEALTH') {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.health-path'), propertyObj);
+                        } else if (propertyObj.type === 'ARC') {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.arc-path'), propertyObj);
+                        } else if (propertyObj.type === 'ICON') {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('foreignObject.icon-path'), propertyObj);
+                        } else if (propertyObj.type === 'STACK') {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('g.stack-chart'), propertyObj);
+                        } else {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'), propertyObj);
+                        }
+                    }
+                }
+            })
         };
 
         /**
