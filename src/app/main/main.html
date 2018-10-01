@@ -1,8 +1,36 @@
-<nav class="row navbar navbar-light shadow-sm fixed-top">
+<nav class="row navbar navbar-light shadow-sm fixed-top bg-white">
     <a class="navbar-brand mb-0 ml-2 h1"  href="javascript:void(0);">Sketchbook</a>
 </nav>
 <div class="row h-100 pt-5" ng-init="main.fnInitMainCtrl()">
-    <div class="col-12 h-100 pt-2">
-        <sketchbook class="h-100"></sketchbook>
+    <div class="col-12 h-100 pt-2" ng-if="!main.isAttributeSelected">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th ng-if="main.attributesArr.length">Name</th>
+                    <th ng-if="main.attributesArr.length">Title</th>
+                    <th ng-if="main.attributesArr.length">Display</th>
+                    <th ng-if="main.attributesArr.length"></th>
+                    <th ng-if="!main.attributesArr.length">No Records Found...</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="attribute in main.attributesArr track by $index">
+                    <td ng-bind="attribute.name">Doe</td>
+                    <td ng-bind="attribute.title">Doe</td>
+                    <td ng-bind="attribute.display">Desc</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary"
+                                ng-click="main.fnSelectAttribute(attribute)">
+                            <i class="fa fa-sign-out"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-12 h-100 pt-2" ng-if="main.isAttributeSelected">
+        <sketchbook class="h-100"
+                    fn-exit-attr-edit-view="main.fnExitAttrEditView(attrObj)"
+                    selected-attribute-obj="main.selectedAttributeObj"></sketchbook>
     </div>
 </div>

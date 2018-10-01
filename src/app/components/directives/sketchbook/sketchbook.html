@@ -3,8 +3,17 @@
         <ul class="nav nav-pills border-bottom">
             <li class="nav-item" ng-repeat="shapeObj in shapesArr" ng-click="fnSetSelectedShape(shapeObj)">
                 <a class="nav-link rounded-0" href="javascript:void(0);" title="{{shapeObj.name}}"
+                   ng-if="shapeObj.attrType === 'Common' || shapeObj.attrType === sbData.data.display"
                    ng-class="{'active': selectedShapeObj.name === shapeObj.name}">
                     <i class="fa fa-fw {{shapeObj.icon}}"></i></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-0"  href="javascript:void(0);"
+                   ng-click="fnExitAttributeEdit()">Back</a>
+            </li>
+            <li class="nav-item" ng-if="sbData.metadata.length !== 0">
+                <a class="nav-link rounded-0"  href="javascript:void(0);"
+                    ng-click="fnSaveAttribute()">Save</a>
             </li>
         </ul>
         <div id="draw-container" class="draw-container"></div>

@@ -785,7 +785,6 @@
             parentG.enter().append("g");
             parentG.attr('class', 'parentG');
             parentG.exit().remove();
-            var color = d3.scale.category20c();
             var bgRect = parentG.selectAll('rect.bg-rect').data(function (d) {
                 return [d];
             });
@@ -832,7 +831,7 @@
                         return d.parent.height && d.parent.height > 0 ? d.parent.height : 0;
                     })
                     .attr("fill", function (d) {
-                        return (color(d.value))
+                        return (d.parent.shapes[0].style.fill)
                     });
             } else {
                 bar.select('rect')
@@ -851,7 +850,7 @@
                         return scale(d.value);
                     })
                     .attr("fill", function (d) {
-                        return (color(d.value))
+                        return (d.parent.shapes[0].style.fill)
                     });
             }
 
@@ -894,9 +893,6 @@
                     shapeObj.attr.d = line([[0, 0], [shapeObj.epX - shapeObj.spX, shapeObj.epY - shapeObj.spY]]);
                     break;
 
-                case 'RANGE_SLIDER_LINE':
-                    shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
-                    break;
                 case 'RANGE_SLIDER_LINE_COLOR':
                     var min = shapeObj.scale(shapeObj.min);
                     var max = shapeObj.scale(shapeObj.max);
@@ -914,7 +910,17 @@
                     } else {
                         shapeObj.attr.transform = 'translate(' + (tx - shapeObj.handleSize) + ',' + ((shapeObj.height / 2) - r) + ')';
                     }
-                    shapeObj.attr.d = "M 0, 0 h " + (rx * 2 / 2) + " v " + (ry * 2) + " h -" + (rx * 2 / 2) + " v -" + ry * 2 + " z";
+                    shapeObj.attr.d = "M 0, 0 h " + rx + " v " + (ry * 2) + " h -" + rx + " v -" + (ry * 2) + " z";
+                    break;
+
+                case 'RANGE_SLIDER_MIN_LINE_COLOR':
+                    var minLine = shapeObj.scale(shapeObj.min);
+                    shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [(minLine - shapeObj.handleSize-1) + shapeObj.handleSize, (shapeObj.height / 2)]]);
+                    break;
+
+                case 'RANGE_SLIDER_MAX_LINE_COLOR':
+                    var maxLine = shapeObj.scale(shapeObj.max);
+                    shapeObj.attr.d = line([[(maxLine - shapeObj.handleSize+1) + shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
                     break;
 
                 case 'TEXT':
@@ -1159,6 +1165,9 @@
          * */
         Sketchbook.prototype.setData = function (data) {
             _this.data = data ? data : [];
+            if (_this.data.length) {
+                sketchbook.update(_this.data);
+            }
         };
 
         return Sketchbook;
