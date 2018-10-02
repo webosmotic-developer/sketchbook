@@ -64,9 +64,92 @@
                         style: {stroke: '#000', 'stroke-width': '1px'}
                     },
                     {
+                        name: 'Title Text', type: 'TITLE_TEXT', icon: 'fa-header', text: 'Title', attr: {},
+                        attrType: 'Common',
+                        style: {
+                            stroke: '#000',
+                            'stroke-width': '1px',
+                            'text-anchor': 'middle',
+                            'dominant-baseline': 'central',
+                            'font-size': 10,
+                            'font-family': 'sans-serif'
+                        },
+                        shapes: [
+                            {
+                                name: 'Title Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'transparent'}
+                            }, {
+                                name: 'Title Text',
+                                type: 'Title_Text',
+                                text: 'Title',
+                                attr: {},
+                                style: {
+                                    stroke: '#000',
+                                    'stroke-width': '1px',
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        name: 'Value Text', type: 'VALUE_TEXT', icon: 'fa-text-width', text: '10', attr: {},
+                        attrType: 'Common',
+                        style: {
+                            stroke: '#000',
+                            'stroke-width': '1px',
+                            'text-anchor': 'middle',
+                            'dominant-baseline': 'central',
+                            'font-size': 10,
+                            'font-family': 'sans-serif'
+                        },
+                        shapes: [
+                            {
+                                name: 'Value Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'transparent'}
+                            }, {
+                                name: 'Value Text',
+                                type: 'Value_Text',
+                                text: '10',
+                                attr: {},
+                                style: {
+                                    stroke: '#000',
+                                    'stroke-width': '1px',
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        name: 'Rectangle LED',
+                        type: 'RECT',
+                        icon: 'fa-square',
+                        attrType: 'LED',
+                        attr: {},
+                        style: {fill: 'red', stroke: 'red'}
+                    },
+                    {
+                        name: 'Circle or Ellipse LED',
+                        type: 'CIRCLE_OR_ELLIPSE',
+                        icon: 'fa-circle',
+                        attrType: 'LED',
+                        attr: {},
+                        style: {fill: 'red', stroke: 'red'}
+                    },
+                    {
                         name: 'Range Slider',
                         type: 'RANGE_SLIDER',
                         icon: 'fa-sliders',
+                        attrType: 'Range Slider',
                         min: 10,
                         max: 40,
                         shapes: [
@@ -168,7 +251,8 @@
                                     'text-anchor': 'middle',
                                     "dominant-baseline": "central",
                                     'font-size': 10,
-                                    'font-family': 'sans-serif'}
+                                    'font-family': 'sans-serif'
+                                }
                             }
                         ]
                     },
@@ -183,6 +267,21 @@
                         orientation: 'vertical', //vertical and horizontal
                         shapes: [
                             {name: 'stack', type: 'STACK-CHART', attr: {}, style: {fill: '#000'}}
+                        ]
+                    },
+                    {
+                        name: 'Toggle',
+                        type: 'TOGGLE',
+                        icon: 'fa-toggle-on',
+                        attrType: 'Toggle',
+                        value: true,
+                        shapes: [
+                            {
+                                name: 'Toggle-switch',
+                                type: 'TOGGLE-SWITCH',
+                                attr: {},
+                                style: {fill: 'transparent', stroke: '#000'}
+                            }
                         ]
                     }
                 ];
@@ -202,6 +301,8 @@
                             shapeObj.shapes[0].style.fill = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
                         } else if (shapeObj.attrType === 'Gauge') {
                             shapeObj.angle = $scope.sbData.data.value;
+                            shapeObj.min = $scope.sbData.data.options.min;
+                            shapeObj.max = $scope.sbData.data.options.max;
                             shapeObj.shapes[1].style.fill = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
                         } else if (shapeObj.attrType === 'Icon') {
                             shapeObj.valueIcon = GhostService.fnGetIconValue($scope.sbData.data.options, $scope.sbData.data.value)
@@ -235,7 +336,13 @@
                 /*----- START: Set and Update Property ------*/
                 sketchbook.onShapeClick = function (sketch) {
                     if (sketch) {
-                        $scope.propertyObj = sketch;
+                        if (sketch.type === "TITLE_TEXT") {
+                            $scope.propertyObj = sketch;
+                            $scope.propertyObj.style = sketch.shapes[1].style;
+                            $scope.propertyObj.text = sketch.shapes[1].text;
+                        } else {
+                            $scope.propertyObj = sketch;
+                        }
                     } else {
                         $scope.propertyObj = null;
                     }
@@ -243,6 +350,10 @@
                 };
 
                 $scope.fnUpdateProperties = function () {
+                    if ($scope.propertyObj.type === "TITLE_TEXT") {
+                        $scope.propertyObj.shapes[1].style = $scope.propertyObj.style;
+                        $scope.propertyObj.shapes[1].text = $scope.propertyObj.text;
+                    }
                     sketchbook.update($scope.sbData.metadata, $scope.propertyObj);
                 };
                 /*----- END: Set and Update Property ------*/
