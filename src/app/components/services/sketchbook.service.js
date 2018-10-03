@@ -51,8 +51,32 @@
                                 return o.type === 'RECT';
                             })[0];
                             d.scale.range([d.handleSize, d.width - d.handleSize]);
-                            _this.createRangeSlider(d3.select(this.parentNode.parentNode), 'range-slider', d);
-                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.rs-path'), data);
+                            if ((d.min <= d.value && d.value <= d.max) && (d.min <= d.minThreshold && d.minThreshold <= d.max) && (d.min <= d.maxThreshold && d.maxThreshold <= d.max)) {
+                                _this.createRangeSlider(d3.select(this.parentNode.parentNode), 'range-slider', d);
+                                _this.updateResizeSelector(d3.select(this.parentNode).select('path.rs-path'), data);
+                            } else {
+                                d.shapes = [
+                                    {
+                                        name: 'Error Rect',
+                                        type: 'RECT',
+                                        attr: {},
+                                        style: {fill: '#808080'}
+                                    }, {
+                                        name: 'Error Text',
+                                        type: 'Error_Text',
+                                        text: 'Out of Range',
+                                        attr: {},
+                                        style: {
+                                            'text-anchor': 'middle',
+                                            'dominant-baseline': 'central',
+                                            'font-size': 10,
+                                            'font-family': 'sans-serif'
+                                        }
+                                    }
+                                ];
+                                _this.createErrorShape(d3.select(this.parentNode.parentNode), 'range-slider', d);
+                                _this.updateResizeSelector(d3.select(this.parentNode).select('g.range-slider'), d);
+                            }
                             break;
                         case 'ARC':
                             d = _this.calShapeHW(d);
@@ -181,7 +205,7 @@
             if (d3.event.type === 'mousedown' && _this.shapeObj) {
                 _this.shapeObj.id = 'sb' + Date.now();
                 if (_this.shapeObj.type === 'RANGE_SLIDER') {
-                    _this.shapeObj.scale = d3.scale.linear().domain([ _this.shapeObj.min,  _this.shapeObj.max]);
+                    _this.shapeObj.scale = d3.scale.linear().domain([_this.shapeObj.min, _this.shapeObj.max]);
                 }
                 _this.shapeObj.zIndex = _this.data.length + 1;
                 var mPoint = d3.mouse(_this.sbSelector.node());
@@ -324,7 +348,11 @@
             if (isCalledForHighlight) {
                 if (data.type !== 'TEXT') {
                     if (data.type === 'RANGE_SLIDER') {
-                        _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
+                        if ((data.min <= data.value && data.value <= data.max) && (data.min <= data.minThreshold && data.minThreshold <= data.max) && (data.min <= data.maxThreshold && data.maxThreshold <= data.max)) {
+                            _this.updateResizeSelector(d3.select('#' + data.id).select('path.rs-path'), data);
+                        } else {
+                            _this.updateResizeSelector(d3.select('#' + data.id).select('g.range-slider'), data);
+                        }
                     } else if (data.type === 'HEALTH') {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.health-path'), data);
                     } else if (data.type === 'ARC') {
@@ -350,8 +378,13 @@
             } else if (propertyObj) {
                 if (propertyObj.type !== 'TEXT') {
                     if (propertyObj.type === 'RANGE_SLIDER') {
-                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
-                            propertyObj);
+                        if ((propertyObj.min <= propertyObj.value && propertyObj.value <= propertyObj.max) && (propertyObj.min <= propertyObj.minThreshold && propertyObj.minThreshold <= propertyObj.max) && (propertyObj.min <= propertyObj.maxThreshold && propertyObj.maxThreshold <= propertyObj.max)) {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'),
+                                propertyObj);
+                        } else {
+                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('g.range-slider'),
+                                propertyObj);
+                        }
                     } else if (propertyObj.type === 'HEALTH') {
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.health-path'),
                             propertyObj);
@@ -410,7 +443,11 @@
                     d3.event.stopPropagation();
                     _this.eraseResizeSelector();
                     if (d.type === 'RANGE_SLIDER') {
-                        _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
+                        if ((d.min <= d.value && d.value <= d.max) && (d.min <= d.minThreshold && d.minThreshold <= d.max) && (d.min <= d.maxThreshold && d.maxThreshold <= d.max)) {
+                            _this.updateResizeSelector(d3.select(this).select('path.rs-path'), d);
+                        } else {
+                            _this.updateResizeSelector(d3.select(this).select('g.range-slider'), d);
+                        }
                     } else if (d.type === 'HEALTH') {
                         _this.updateResizeSelector(d3.select(this).select('path.health-path'), d);
                     } else if (d.type === 'ARC') {
@@ -446,7 +483,30 @@
                 if (d.type === 'TEXT') {
                     _this.createTextElem(d3.select("g#" + d.id), 'shape-text');
                 } else if (d.type === 'RANGE_SLIDER') {
-                    _this.createRangeSlider(d3.select("g#" + d.id), 'range-slider');
+                    if ((d.min <= d.value && d.value <= d.max) && (d.min <= d.minThreshold && d.minThreshold <= d.max) && (d.min <= d.maxThreshold && d.maxThreshold <= d.max)) {
+                        _this.createRangeSlider(d3.select("g#" + d.id), 'range-slider');
+                    } else {
+                        d.shapes = [
+                            {
+                                name: 'Error Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: '#808080'}
+                            }, {
+                                name: 'Error Text',
+                                type: 'Error_Text',
+                                text: 'Out of Range',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            }
+                        ];
+                        _this.createErrorShape(d3.select("g#" + d.id), 'range-slider');
+                    }
                 } else if (d.type === 'HEALTH') {
                     _this.createHealthShape(d3.select("g#" + d.id), 'shape-health');
                 } else if (d.type === 'ARC') {
@@ -818,6 +878,162 @@
 
             // Exit
             path.exit().remove();
+
+
+            var MinTitle = gRangeSlider.selectAll('text.min-text')
+                .data(function (d) {
+                    return d ? [d.shapes[7]] : [];
+                });
+
+            // Enter
+            MinTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'min-text');
+
+            MinTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            MinTitle.exit().remove();
+
+            var MaxTitle = gRangeSlider.selectAll('text.max-text')
+                .data(function (d) {
+                    return d ? [d.shapes[9]] : [];
+                });
+
+            // Enter
+            MaxTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'max-text');
+
+            MaxTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            MaxTitle.exit().remove();
+
+            var valueTitle = gRangeSlider.selectAll('text.value-text')
+                .data(function (d) {
+                    return d ? [d.shapes[11]] : [];
+                });
+
+            // Enter
+            valueTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'value-text');
+
+            valueTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            valueTitle.exit().remove();
+
+            var MinHeaderTitle = gRangeSlider.selectAll('text.min-header-text')
+                .data(function (d) {
+                    return d ? [d.shapes[12]] : [];
+                });
+
+            // Enter
+            MinHeaderTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'min-header-text');
+
+            MinHeaderTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            MinHeaderTitle.exit().remove();
+
+            var MaxHeaderTitle = gRangeSlider.selectAll('text.max-header-text')
+                .data(function (d) {
+                    return d ? [d.shapes[13]] : [];
+                });
+
+            // Enter
+            MaxHeaderTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'max-header-text');
+
+            MaxHeaderTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            MaxHeaderTitle.exit().remove();
 
             // Exit
             gRangeSlider.exit().remove();
@@ -1471,6 +1687,7 @@
                     var min = shapeObj.scale(shapeObj.minThreshold);
                     var max = shapeObj.scale(shapeObj.maxThreshold);
                     shapeObj.attr.d = line([[(min - shapeObj.handleSize) + shapeObj.handleSize * 2, (shapeObj.height / 2)], [(max + shapeObj.handleSize) - shapeObj.handleSize * 2, shapeObj.height / 2]]);
+                    shapeObj.style['stroke-width'] = (shapeObj.handleSize) - 1;
                     break;
 
                 case 'RANGE_SLIDER_MIN_ELLIPSE':
@@ -1490,11 +1707,93 @@
                 case 'RANGE_SLIDER_MIN_LINE_COLOR':
                     var minLine = shapeObj.scale(shapeObj.minThreshold);
                     shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [(minLine - shapeObj.handleSize - 1) + shapeObj.handleSize, (shapeObj.height / 2)]]);
+                    shapeObj.style['stroke-width'] = (shapeObj.handleSize) - 1;
                     break;
 
                 case 'RANGE_SLIDER_MAX_LINE_COLOR':
                     var maxLine = shapeObj.scale(shapeObj.maxThreshold);
                     shapeObj.attr.d = line([[(maxLine - shapeObj.handleSize + 1) + shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
+                    shapeObj.style['stroke-width'] = (shapeObj.handleSize) - 1;
+                    break;
+
+                case 'RANGE_SLIDER_MIN_THRESHOLD_VALUE_RECT':
+                    var minThreshold = shapeObj.scale(shapeObj.minThreshold);
+                    r = shapeObj.handleSize; // 10% of height or width
+                    rx = r; // Horizontal
+                    ry = r; // Vertical
+                    shapeObj.attr.transform = 'translate(' + (minThreshold - shapeObj.handleSize + r / 2) + ',' + ((shapeObj.height / 2) / 2) + ')';
+                    shapeObj.attr.d = "M 0, 0 h " + rx * 2 + " v " + (ry) + " h -" + rx * 2 + " v -" + (ry) + " z";
+                    break;
+
+                case 'RANGE_SLIDER_MIN_THRESHOLD_VALUE_TEXT':
+                    var minThreshold1 = shapeObj.scale(shapeObj.minThreshold);
+                    r = shapeObj.handleSize;
+                    shapeObj.attr.x = minThreshold1 + r / 2;
+                    shapeObj.attr.y = r * 2 + r;
+                    shapeObj.style['font-size'] = (shapeObj.handleSize) - 1;
+                    shapeObj.text = shapeObj.minThreshold === 0 ? "0" : shapeObj.minThreshold;
+                    break;
+
+                case 'RANGE_SLIDER_MAX_THRESHOLD_VALUE_RECT':
+                    var maxThreshold = shapeObj.scale(shapeObj.maxThreshold);
+                    r = shapeObj.handleSize; // 10% of height or width
+                    rx = r; // Horizontal
+                    ry = r; // Vertical
+                    shapeObj.attr.transform = 'translate(' + (maxThreshold - shapeObj.handleSize - r / 2) + ',' + ((shapeObj.height / 2) / 2) + ')';
+                    shapeObj.attr.d = "M 0, 0 h " + rx * 2 + " v " + (ry) + " h -" + rx * 2 + " v -" + (ry) + " z";
+                    break;
+
+                case 'RANGE_SLIDER_MAX_THRESHOLD_VALUE_TEXT':
+                    var maxThreshold1 = shapeObj.scale(shapeObj.maxThreshold);
+                    r = shapeObj.handleSize;
+                    shapeObj.attr.x = (maxThreshold1 + r / 2) - r;
+                    shapeObj.attr.y = r * 2 + r;
+                    shapeObj.style['font-size'] = (shapeObj.handleSize) - 1;
+                    shapeObj.text = shapeObj.maxThreshold;
+                    break;
+
+                case 'RANGE_SLIDER_VALUE_RECT':
+                    var value = shapeObj.scale(shapeObj.value);
+                    r = shapeObj.handleSize; // 10% of height or width
+                    rx = r; // Horizontal
+                    ry = r; // Vertical
+                    shapeObj.attr.transform = 'translate(' + (value - shapeObj.handleSize - r / 2) + ',' + ((shapeObj.height / 4) + r * 4) + ')';
+                    shapeObj.attr.d = "M 0, 0 h " + rx * 2 + " v " + (ry) + " h -" + rx * 2 + " v -" + (ry) + " z";
+                    break;
+
+                case 'RANGE_SLIDER_VALUE_TEXT':
+                    var value1 = shapeObj.scale(shapeObj.value);
+                    r = shapeObj.handleSize;
+                    shapeObj.attr.x = value1 - r / 2;
+                    shapeObj.attr.y = ((shapeObj.height / 4) + r * 4 + r / 2);
+                    shapeObj.style['font-size'] = (shapeObj.handleSize) - 1;
+                    shapeObj.text = shapeObj.value === 0 ? "0" : shapeObj.value;
+                    break;
+
+                case 'RANGE_SLIDER_MIN_VALUE_TEXT':
+                    r = shapeObj.handleSize;
+                    shapeObj.attr.x = r / 2;
+                    shapeObj.attr.y = ((shapeObj.height / 2)) - r + r * 2;
+                    shapeObj.style['font-size'] = (shapeObj.handleSize) - 1;
+                    shapeObj.text = shapeObj.min === 0 ? "0" : shapeObj.min;
+                    break;
+
+                case 'RANGE_SLIDER_MAX_VALUE_TEXT':
+                    r = shapeObj.handleSize;
+                    shapeObj.attr.x = shapeObj.units === '' ? (shapeObj.width - r) : (shapeObj.width - r * 2);
+                    shapeObj.attr.y = ((shapeObj.height / 2)) - r + r * 2;
+                    shapeObj.style['font-size'] = (shapeObj.handleSize) - 1;
+                    shapeObj.text = shapeObj.max + " " + shapeObj.units;
+                    break;
+
+                case 'RANGE_SLIDER_VALUE_LINE_INDICATOR':
+                    var valueLine = shapeObj.scale(shapeObj.value);
+                    r = shapeObj.handleSize; // 10% of height or width
+                    rx = r; // Horizontal
+                    ry = r; // Vertical
+                    shapeObj.attr.transform = 'translate(' + (shapeObj.handleSize - r / 2) + ',' + ((shapeObj.height / 2) + (shapeObj.handleSize / 2) - 1) + ')';
+                    shapeObj.attr.d = "M" + (valueLine - r / 2) + " 0 v" + ((shapeObj.height / 8) / 2 + 1) + " " + ((shapeObj.height / 8) / 4 + 1);
+                    shapeObj.style['stroke-width'] = (shapeObj.handleSize) / 4;
                     break;
 
                 case 'TEXT':
@@ -1633,7 +1932,12 @@
                 if (propertyObj) {
                     if (propertyObj.type !== 'TEXT') {
                         if (propertyObj.type === 'RANGE_SLIDER') {
-                            _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'), propertyObj);
+
+                            if ((propertyObj.min <= propertyObj.value && propertyObj.value <= propertyObj.max) && (propertyObj.min <= propertyObj.minThreshold && propertyObj.minThreshold <= propertyObj.max) && (propertyObj.min <= propertyObj.maxThreshold && propertyObj.maxThreshold <= propertyObj.max)) {
+                                _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.rs-path'), propertyObj);
+                            } else {
+                                _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('g.range-slider'), propertyObj);
+                            }
                         } else if (propertyObj.type === 'HEALTH') {
                             _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.health-path'), propertyObj);
                         } else if (propertyObj.type === 'ARC') {

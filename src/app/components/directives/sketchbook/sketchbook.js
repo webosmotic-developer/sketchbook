@@ -186,7 +186,8 @@
                         max: 100,
                         minThreshold: 10,
                         maxThreshold: 60,
-                        value: 50,
+                        value: 5,
+                        units:'%',
                         shapes: [
                             {
                                 name: 'Range Slider Rectangle',
@@ -223,6 +224,90 @@
                                 type: 'RANGE_SLIDER_MAX_LINE_COLOR',
                                 attr: {},
                                 style: {'stroke-width': '15px', stroke: '#26ff0a'}
+                            },
+                            {
+                                name: 'Range Slider Min Threshold Value Rect',
+                                type: 'RANGE_SLIDER_MIN_THRESHOLD_VALUE_RECT',
+                                attr: {},
+                                style: {fill: '#fff', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Min Threshold Value Text',
+                                type: 'RANGE_SLIDER_MIN_THRESHOLD_VALUE_TEXT',
+                                text: '0',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            },
+                            {
+                                name: 'Range Slider Max Threshold Value Rect',
+                                type: 'RANGE_SLIDER_MAX_THRESHOLD_VALUE_RECT',
+                                attr: {},
+                                style: {fill: '#fff', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Max Threshold Value Text',
+                                type: 'RANGE_SLIDER_MAX_THRESHOLD_VALUE_TEXT',
+                                text: '0',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            },
+                            {
+                                name: 'Range Slider Value Rect',
+                                type: 'RANGE_SLIDER_VALUE_RECT',
+                                attr: {},
+                                style: {fill: '#fff', stroke: '#000'}
+                            },
+                            {
+                                name: 'Range Slider Value Text',
+                                type: 'RANGE_SLIDER_VALUE_TEXT',
+                                text: '0',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            },
+                            {
+                                name: 'Range Slider Min Value Text',
+                                type: 'RANGE_SLIDER_MIN_VALUE_TEXT',
+                                text: '0',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            },
+                            {
+                                name: 'Range Slider Max Value Text',
+                                type: 'RANGE_SLIDER_MAX_VALUE_TEXT',
+                                text: '0',
+                                attr: {},
+                                style: {
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            },
+                            {
+                                name: 'Range Slider Value Line Indicator',
+                                type: 'RANGE_SLIDER_VALUE_LINE_INDICATOR',
+                                attr: {},
+                                style: {'stroke-width': '15px', stroke: '#A9A9A9'}
                             }
                         ]
                     }, {
@@ -301,6 +386,7 @@
                         } else if (shapeObj.attrType === 'Icon') {
                             shapeObj.valueIcon = GhostService.fnGetIconValue($scope.sbData.data.options, $scope.sbData.data.value)
                         } else if (shapeObj.attrType === 'Range Slider') {
+                            shapeObj.units = $scope.sbData.data.units;
                             shapeObj.value = $scope.sbData.data.value;
                             shapeObj.min = $scope.sbData.data.options.min;
                             shapeObj.max = $scope.sbData.data.options.max;
@@ -309,6 +395,7 @@
                             shapeObj.shapes[3].style.stroke = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
                             shapeObj.shapes[4].style.stroke = $scope.sbData.data.options.minThresholdColor;
                             shapeObj.shapes[5].style.stroke = $scope.sbData.data.options.maxThresholdColor;
+                            shapeObj.shapes[13].units = $scope.sbData.data.units;
                         } else if (shapeObj.attrType === 'Toggle') {
                             var toggleObj = GhostService.fnGetToggleValue($scope.sbData.data.options, $scope.sbData.data.value);
                             shapeObj.value = toggleObj.switchValue;

@@ -38,7 +38,7 @@
                 "name": "ld_power",
                 "title": "Ld_power",
                 "units": "",
-                "value": -2.9,
+                "value": 5,
                 "display": "Stack",
                 "health": "Healthy",
                 "healthCode": 200,
@@ -293,6 +293,35 @@
                     "stackType": "horizontal"
                 },
                 "healthColor": "#e7413d",
+                "metadata": []
+            },
+            {
+                "name": "prop2",
+                "title": "prop2 Range Slider",
+                "units": "%",
+                "display": "Range Slider",
+                "health": "HELP",
+                "healthColor": "red",
+                "options": {
+                    "min": 0,
+                    "max": 100,
+                    "mapType": "range",
+                    "range": [
+                        {
+                            "from": 1,
+                            "to": 100,
+                            "color": "#2f1e70"
+                        }
+                    ],
+                    "defaultColor": "#2c5929",
+                    "minThresholdValue": 20,
+                    "maxThresholdValue": 80,
+                    "minThresholdColor": "#d84611",
+                    "maxThresholdColor": "#d81015",
+                    "minLabel": "Low Power",
+                    "maxLabel": "High Power"
+                },
+                "value": 50,
                 "metadata": []
             }
         ];
