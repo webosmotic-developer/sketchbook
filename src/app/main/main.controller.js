@@ -244,6 +244,56 @@
                 },
                 "healthColor": "#e7413d",
                 "metadata": []
+            },
+            {
+                "name": "prop2",
+                "units": "%",
+                "display": "Range Slider",
+                "health": "HELP",
+                "healthColor": "red",
+                "options": {
+                    "min": 1,
+                    "max": 100,
+                    "mapType": "range",
+                    "range": [
+                        {
+                            "from": 1,
+                            "to": 100,
+                            "color": "#2f1e70"
+                        }
+                    ],
+                    "defaultColor": "#2c5929",
+                    "minThresholdValue": 20,
+                    "maxThresholdValue": 80,
+                    "minThresholdColor": "#d84611",
+                    "maxThresholdColor": "#d84611",
+                    "minLabel": "Low Power",
+                    "maxLabel": "High Power"
+                },
+                "value": 50,
+                "metadata": []
+            },{
+                "name": "Led",
+                "title": "LED",
+                "units": "",
+                "value": "200",
+                "display": "LED",
+                "health": "SEV 1",
+                "healthCode": 500,
+                "options": {
+                    "defaultColor": "#8f79af",
+                    "mapType": "range",
+                    "range": [
+                        {
+                            "from": "",
+                            "to": "",
+                            "color": ""
+                        }
+                    ],
+                    "stackType": "horizontal"
+                },
+                "healthColor": "#e7413d",
+                "metadata": []
             }
         ];
         vm.selectedAttributeObj = null;

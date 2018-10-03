@@ -181,7 +181,7 @@
             if (d3.event.type === 'mousedown' && _this.shapeObj) {
                 _this.shapeObj.id = 'sb' + Date.now();
                 if (_this.shapeObj.type === 'RANGE_SLIDER') {
-                    _this.shapeObj.scale = d3.scale.linear().domain([0, 50]);
+                    _this.shapeObj.scale = d3.scale.linear().domain([ _this.shapeObj.min,  _this.shapeObj.max]);
                 }
                 _this.shapeObj.zIndex = _this.data.length + 1;
                 var mPoint = d3.mouse(_this.sbSelector.node());
@@ -772,6 +772,9 @@
                             o.width = so.width;
                             o.min = so.min;
                             o.max = so.max;
+                            o.minThreshold = so.minThreshold;
+                            o.maxThreshold = so.maxThreshold;
+                            o.value = so.value;
                             o.handleSize = so.handleSize;
                             o.scale = so.scale;
                             return o;
@@ -1225,7 +1228,6 @@
         };
 
         _this.createToggleShape = function (select, selectAll, data) {
-            var isChecked = '';
             var gRangeSlider = select.selectAll('g.' + selectAll).data(function (d) {
                 var shapeData = data ? [data] : [d];
                 shapeData = shapeData.map(function (so) {
@@ -1239,7 +1241,7 @@
                             o.epY = so.epY;
                             o.height = so.height;
                             o.width = so.width;
-                            isChecked = false;
+                            o.value = so.value;
                             return o;
                         });
                     }
@@ -1302,11 +1304,11 @@
                     return d.height / 4;
                 })
                 .style("stroke-width", "1px")
-                .style("fill", function () {
-                    return isChecked === true ? "#6CCCCC" : "#fff";
+                .style("fill", function (d) {
+                    return d.value === true ? "#6CCCCC" : "#fff";
                 })
-                .style("stroke", function () {
-                    return isChecked === true ? "#46bfbf" : "#000000";
+                .style("stroke", function (d) {
+                    return d.value === true ? "#46bfbf" : "#000000";
                 });
 
             var circle = parentG.selectAll("g.g-toggle-circle")
@@ -1320,7 +1322,7 @@
             circle.select('circle').attr("class", "toggle-rect")
                 .style("fill", "#4d4d4d")
                 .attr("cx", function (d) {
-                    return isChecked === true ? d.height / 4 : (d.width - d.height / 2) + 5;
+                    return d.value === true ? d.height / 4 : (d.width - d.height / 2) + 5;
                 })
                 .attr("cy", function (d) {
                     return d.height / 2;
@@ -1466,14 +1468,14 @@
                     break;
 
                 case 'RANGE_SLIDER_LINE_COLOR':
-                    var min = shapeObj.scale(shapeObj.min);
-                    var max = shapeObj.scale(shapeObj.max);
+                    var min = shapeObj.scale(shapeObj.minThreshold);
+                    var max = shapeObj.scale(shapeObj.maxThreshold);
                     shapeObj.attr.d = line([[(min - shapeObj.handleSize) + shapeObj.handleSize * 2, (shapeObj.height / 2)], [(max + shapeObj.handleSize) - shapeObj.handleSize * 2, shapeObj.height / 2]]);
                     break;
 
                 case 'RANGE_SLIDER_MIN_ELLIPSE':
                 case 'RANGE_SLIDER_MAX_ELLIPSE':
-                    var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? shapeObj.scale(shapeObj.min) : shapeObj.scale(shapeObj.max));
+                    var tx = (shapeObj.type === 'RANGE_SLIDER_MIN_ELLIPSE' ? shapeObj.scale(shapeObj.minThreshold) : shapeObj.scale(shapeObj.maxThreshold));
                     r = shapeObj.handleSize; // 10% of height or width
                     rx = r; // Horizontal
                     ry = r; // Vertical
@@ -1486,12 +1488,12 @@
                     break;
 
                 case 'RANGE_SLIDER_MIN_LINE_COLOR':
-                    var minLine = shapeObj.scale(shapeObj.min);
+                    var minLine = shapeObj.scale(shapeObj.minThreshold);
                     shapeObj.attr.d = line([[shapeObj.handleSize, shapeObj.height / 2], [(minLine - shapeObj.handleSize - 1) + shapeObj.handleSize, (shapeObj.height / 2)]]);
                     break;
 
                 case 'RANGE_SLIDER_MAX_LINE_COLOR':
-                    var maxLine = shapeObj.scale(shapeObj.max);
+                    var maxLine = shapeObj.scale(shapeObj.maxThreshold);
                     shapeObj.attr.d = line([[(maxLine - shapeObj.handleSize + 1) + shapeObj.handleSize, shapeObj.height / 2], [shapeObj.width - shapeObj.handleSize, shapeObj.height / 2]]);
                     break;
 

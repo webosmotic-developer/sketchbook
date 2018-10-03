@@ -45,25 +45,32 @@
                         icon: 'fa-square-o',
                         attrType: 'Common',
                         attr: {},
-                        style: {fill: 'transparent', stroke: '#000'}
-                    },
-                    {
+                        style: {fill: 'transparent', stroke: '#000', 'stroke-width': '1px'}
+                    }, {
                         name: 'Circle or Ellipse',
                         type: 'CIRCLE_OR_ELLIPSE',
                         icon: 'fa-circle-o',
                         attrType: 'Common',
                         attr: {},
-                        style: {fill: 'transparent', stroke: '#000'}
-                    },
-                    {
+                        style: {fill: 'transparent', stroke: '#000', 'stroke-width': '1px'}
+                    }, {
                         name: 'Straight Line',
                         type: 'STRAIGHT_LINE',
                         icon: 'fa-minus',
                         attrType: 'Common',
                         attr: {},
                         style: {stroke: '#000', 'stroke-width': '1px'}
-                    },
-                    {
+                    }, {
+                        name: 'Text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
+                        attrType: 'Common',
+                        style: {
+                            stroke: '#000',
+                            'stroke-width': '1px',
+                            'text-anchor': 'middle',
+                            'font-size': 40,
+                            'font-family': 'sans-serif'
+                        }
+                    }, {
                         name: 'Title Text', type: 'TITLE_TEXT', icon: 'fa-header', text: 'Title', attr: {},
                         attrType: 'Common',
                         style: {
@@ -95,8 +102,7 @@
                                 }
                             }
                         ]
-                    },
-                    {
+                    }, {
                         name: 'Value Text', type: 'VALUE_TEXT', icon: 'fa-text-width', text: '10', attr: {},
                         attrType: 'Common',
                         style: {
@@ -128,30 +134,59 @@
                                 }
                             }
                         ]
-                    },
-                    {
+                    }, {
+                        name: 'Health',
+                        type: 'HEALTH',
+                        icon: 'fa-heartbeat',
+                        attrType: 'Common',
+                        healthCode: 200,
+                        attr: {},
+                        style: {},
+                        shapes: [
+                            {
+                                name: 'Health Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'green'}
+                            }, {
+                                name: 'Health Text',
+                                type: 'Health_Text',
+                                text: 'OK',
+                                attr: {},
+                                style: {
+                                    stroke: '#000',
+                                    'stroke-width': '1px',
+                                    'text-anchor': 'middle',
+                                    "dominant-baseline": "central",
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            }
+                        ]
+                    }, {
                         name: 'Rectangle LED',
                         type: 'RECT',
                         icon: 'fa-square',
                         attrType: 'LED',
                         attr: {},
                         style: {fill: 'red', stroke: 'red'}
-                    },
-                    {
+                    }, {
                         name: 'Circle or Ellipse LED',
                         type: 'CIRCLE_OR_ELLIPSE',
                         icon: 'fa-circle',
                         attrType: 'LED',
                         attr: {},
                         style: {fill: 'red', stroke: 'red'}
-                    },
-                    {
+                    }, {
                         name: 'Range Slider',
                         type: 'RANGE_SLIDER',
                         icon: 'fa-sliders',
                         attrType: 'Range Slider',
-                        min: 10,
-                        max: 40,
+                        min: 0,
+                        max: 100,
+                        minThreshold: 10,
+                        maxThreshold: 60,
+                        value: 50,
                         shapes: [
                             {
                                 name: 'Range Slider Rectangle',
@@ -203,16 +238,6 @@
                             {name: 'Main Arc', type: 'MAIN_ARC', attr: {}, style: {fill: 'red'}}
                         ]
                     }, {
-                        name: 'Text', type: 'TEXT', icon: 'fa-font', text: 'Text', attr: {},
-                        attrType: 'Text',
-                        style: {
-                            stroke: '#000',
-                            'stroke-width': '1px',
-                            'text-anchor': 'middle',
-                            'font-size': 40,
-                            'font-family': 'sans-serif'
-                        }
-                    }, {
                         name: 'Icon',
                         type: 'ICON',
                         icon: 'fa-font-awesome',
@@ -227,36 +252,6 @@
                             }
                         ]
                     }, {
-                        name: 'Health',
-                        type: 'HEALTH',
-                        icon: 'fa-heartbeat',
-                        attrType: 'Common',
-                        healthCode: 200,
-                        attr: {},
-                        style: {},
-                        shapes: [
-                            {
-                                name: 'Health Rect',
-                                type: 'RECT',
-                                attr: {},
-                                style: {fill: 'green'}
-                            }, {
-                                name: 'Health Text',
-                                type: 'Health_Text',
-                                text: 'OK',
-                                attr: {},
-                                style: {
-                                    stroke: '#000',
-                                    'stroke-width': '1px',
-                                    'text-anchor': 'middle',
-                                    "dominant-baseline": "central",
-                                    'font-size': 10,
-                                    'font-family': 'sans-serif'
-                                }
-                            }
-                        ]
-                    },
-                    {
                         name: 'Stack',
                         type: 'STACK',
                         icon: 'fa-bar-chart',
@@ -268,8 +263,7 @@
                         shapes: [
                             {name: 'stack', type: 'STACK-CHART', attr: {}, style: {fill: '#000'}}
                         ]
-                    },
-                    {
+                    }, {
                         name: 'Toggle',
                         type: 'TOGGLE',
                         icon: 'fa-toggle-on',
@@ -307,16 +301,37 @@
                         } else if (shapeObj.attrType === 'Icon') {
                             shapeObj.valueIcon = GhostService.fnGetIconValue($scope.sbData.data.options, $scope.sbData.data.value)
                         } else if (shapeObj.attrType === 'Range Slider') {
-                            console.log("range slider");
+                            shapeObj.value = $scope.sbData.data.value;
+                            shapeObj.min = $scope.sbData.data.options.min;
+                            shapeObj.max = $scope.sbData.data.options.max;
+                            shapeObj.minThreshold = $scope.sbData.data.options.minThresholdValue;
+                            shapeObj.maxThreshold = $scope.sbData.data.options.maxThresholdValue;
+                            shapeObj.shapes[3].style.stroke = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
+                            shapeObj.shapes[4].style.stroke = $scope.sbData.data.options.minThresholdColor;
+                            shapeObj.shapes[5].style.stroke = $scope.sbData.data.options.maxThresholdColor;
                         } else if (shapeObj.attrType === 'Toggle') {
-                            console.log("toggle");
-                        } else if (shapeObj.attrType === 'Led') {
-                            console.log("led");
+                            var toggleObj = GhostService.fnGetToggleValue($scope.sbData.data.options, $scope.sbData.data.value);
+                            shapeObj.value = toggleObj.switchValue;
+                        } else if (shapeObj.attrType === 'LED') {
+                            shapeObj.style.fill = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
+                            shapeObj.style.stroke = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
                         }
                     } else if (shapeObj.attrType === 'Common' && shapeObj.type === 'HEALTH') {
                         shapeObj.healthCode = $scope.sbData.data.healthCode;
                         shapeObj.shapes[0].style.fill = $scope.sbData.data.healthColor;
                         shapeObj.shapes[1].text = $scope.sbData.data.health;
+                    } else if (shapeObj.attrType === 'Common' && shapeObj.type === 'TITLE_TEXT') {
+                        shapeObj.text = $scope.sbData.data.title;
+                        shapeObj.shapes[1].text = $scope.sbData.data.title;
+                    } else if (shapeObj.attrType === 'Common' && shapeObj.type === 'VALUE_TEXT') {
+                        if ($scope.sbData.data.display === 'Toggle') {
+                            var textObj = GhostService.fnGetToggleValue($scope.sbData.data.options, $scope.sbData.data.value);
+                            shapeObj.text = textObj.displayText;
+                            shapeObj.shapes[1].text = textObj.displayText;
+                        } else {
+                            shapeObj.text = $scope.sbData.data.value;
+                            shapeObj.shapes[1].text = $scope.sbData.data.value;
+                        }
                     }
                 });
                 sketchbook.setData($scope.sbData.metadata);
