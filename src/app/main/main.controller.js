@@ -14,13 +14,13 @@
                 "name": "fw_version",
                 "title": "Fw_version",
                 "units": "",
-                "value": 1,
+                "value": -1,
                 "display": "Gauge",
                 "health": "Healthy",
                 "healthCode": 200,
                 "options": {
-                    "min": 1,
-                    "max": 1,
+                    "min": -10,
+                    "max": 2,
                     "defaultColor": "#6CCCCC",
                     "mapType": "range",
                     "range": [

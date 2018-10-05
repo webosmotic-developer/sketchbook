@@ -180,6 +180,18 @@
                             _this.updateResizeSelector(d3.select(this.parentNode).select('g.toggle-switch'), d);
                             break;
 
+                        case 'TEXT':
+                            d = _this.calShapeHW(d);
+                            d.handleSize = Math.min(d.height, d.width) * 0.95; // 35% of height or width
+                            var textData = d.shapes.filter(function (o) {
+                                o.height = d.height;
+                                o.width = d.width;
+                                return o.type === 'RECT';
+                            })[0];
+                            _this.createTextElem(d3.select(this.parentNode.parentNode), 'shape-text', d);
+                            _this.updateResizeSelector(d3.select(this.parentNode).select('path.text-path'), textData);
+                            break;
+
                     }
                 }
             });
@@ -255,6 +267,10 @@
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.95; // 35% of height or width
                         break;
                     case 'VALUE_TEXT':
+                        _this.shapeObj = _this.calShapeHW(_this.shapeObj);
+                        _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.95; // 35% of height or width
+                        break;
+                    case 'TEXT':
                         _this.shapeObj = _this.calShapeHW(_this.shapeObj);
                         _this.shapeObj.handleSize = Math.min(_this.shapeObj.height, _this.shapeObj.width) * 0.95; // 35% of height or width
                         break;
@@ -374,6 +390,8 @@
                     } else {
                         _this.updateResizeSelector(d3.select('#' + data.id).select('path.shape-path'), data);
                     }
+                }else{
+                    _this.updateResizeSelector(d3.select('#' + data.id).select('path.text-path'), data);
                 }
             } else if (propertyObj) {
                 if (propertyObj.type !== 'TEXT') {
@@ -415,6 +433,9 @@
                         _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'),
                             propertyObj);
                     }
+                }else{
+                    _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.text-path'),
+                        propertyObj);
                 }
             }
         };
@@ -466,6 +487,8 @@
                         _this.updateResizeSelector(d3.select(this).select('path.value-path'), d);
                     } else if (d.type === 'TOGGLE') {
                         _this.updateResizeSelector(d3.select(this).select('g.toggle-switch'), d);
+                    } else if (d.type === 'TEXT') {
+                        _this.updateResizeSelector(d3.select(this).select('path.text-path'), d);
                     } else if (d.type !== 'TEXT') {
                         _this.updateResizeSelector(d3.select(this).select('path.shape-path'), d);
                     }
@@ -583,15 +606,50 @@
          * @param data
          * */
         _this.createTextElem = function (select, selectAll, data) {
-            var text = select.selectAll('text.' + selectAll).data(function (d) {
-                return data ? [data] : [d];
+            var gText = select.selectAll('g.' + selectAll).data(function (d) {
+                var shapeData = data ? [data] : [d];
+                shapeData = shapeData.map(function (so) {
+                    if (so.shapes && so.shapes.length) {
+                        so.shapes = so.shapes.map(function (o, i) {
+                            var name = o.name.split(' ').join('-').toLowerCase();
+                            o.id = name + '-' + (i + 1);
+                            o.spX = so.spX;
+                            o.spY = so.spY;
+                            o.epX = so.epX;
+                            o.epY = so.epY;
+                            o.height = so.height;
+                            o.width = so.width;
+                            o.min = so.min;
+                            o.max = so.max;
+                            o.handleSize = so.handleSize;
+                            return o;
+                        });
+                    }
+                    return so;
+                });
+                return shapeData;
             });
 
             // Enter
-            text.enter().append('text').attr('class', selectAll);
+            gText.enter().append('g').attr('class', selectAll);
 
             // Update
-            text
+            gText.attr('class', selectAll);
+
+            var path = gText.selectAll('path.text-path')
+                .data(function (d) {
+                    return d.shapes ? [d.shapes[0]] : [];
+                });
+
+            // Enter
+            path.enter().append('path')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'text-path');
+
+            // Update
+            path
                 .each(function (d) {
                     d = _this.updateAttr(d);
                     var element = d3.select(this);
@@ -607,7 +665,42 @@
                 });
 
             // Exit
-            text.exit().remove();
+            path.exit().remove();
+
+            var tTitle = gText.selectAll('text.title-text')
+                .data(function (d) {
+                    return d.shapes ? [d.shapes[1]] : [];
+                });
+
+            // Enter
+            tTitle.enter().append('text')
+                .attr('id', function (d) {
+                    return d.id;
+                })
+                .attr('class', 'title-text');
+
+            // Update
+            tTitle
+                .each(function (d) {
+                    d = _this.updateAttr(d);
+
+                    var element = d3.select(this);
+                    angular.forEach(d.attr, function (val, key) {
+                        element.attr(key, val);
+                    });
+                    angular.forEach(d.style, function (val, key) {
+                        element.style(key, val);
+                    });
+                    if (d.text) {
+                        element.text(d.text);
+                    }
+                });
+
+            // Exit
+            tTitle.exit().remove();
+
+            // Exit
+            gText.exit().remove();
         };
 
         /**
@@ -1813,6 +1906,12 @@
                     shapeObj.style['font-size'] = shapeObj.handleSize;
                     break;
 
+                case 'Text_Text':
+                    shapeObj.attr.x = shapeObj.width / 2;
+                    shapeObj.attr.y = shapeObj.height / 2;
+                    shapeObj.style['font-size'] = shapeObj.handleSize;
+                    break;
+
                 case 'Error_Text':
                     shapeObj.attr.x = shapeObj.width / 2;
                     shapeObj.attr.y = shapeObj.height / 2;
@@ -1829,10 +1928,15 @@
                 case 'MAIN_ARC':
                     var outerRadius = Math.max(shapeObj.width, shapeObj.height);
                     var innerRadius = outerRadius - shapeObj.radius;
+                    var scale = d3.scale.linear().domain([shapeObj.min, shapeObj.max]).range([0,180]);
                     var startAngle, endAngle;
                     if (shapeObj.orientation === 'left') {
                         endAngle = -Math.PI / 2;
-                        startAngle = endAngle + (Math.PI * (shapeObj.angle / 100));
+                        if(shapeObj.type !== 'OUTER_ARC'){
+                            startAngle = endAngle + (Math.PI * (scale(shapeObj.angle) / 180));
+                        }else{
+                            startAngle = endAngle + (Math.PI * (shapeObj.angle / 100));
+                        }
                     } else {
                         endAngle = Math.PI / 2;
                         startAngle = endAngle - (Math.PI * (shapeObj.angle / 100));
@@ -1959,6 +2063,8 @@
                         } else {
                             _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.shape-path'), propertyObj);
                         }
+                    }else{
+                        _this.updateResizeSelector(d3.select('#' + propertyObj.id).select('path.text-path'), propertyObj);
                     }
                 }
             })

@@ -67,9 +67,30 @@
                             stroke: '#000',
                             'stroke-width': '1px',
                             'text-anchor': 'middle',
-                            'font-size': 40,
+                            'font-size': 10,
                             'font-family': 'sans-serif'
-                        }
+                        },
+                        shapes: [
+                            {
+                                name: 'Text Rect',
+                                type: 'RECT',
+                                attr: {},
+                                style: {fill: 'transparent'}
+                            }, {
+                                name: 'Text Text',
+                                type: 'Text_Text',
+                                text: 'Text',
+                                attr: {},
+                                style: {
+                                    stroke: '#000',
+                                    'stroke-width': '1px',
+                                    'text-anchor': 'middle',
+                                    'dominant-baseline': 'central',
+                                    'font-size': 10,
+                                    'font-family': 'sans-serif'
+                                }
+                            }
+                        ]
                     }, {
                         name: 'Title Text', type: 'TITLE_TEXT', icon: 'fa-header', text: 'Title', attr: {},
                         attrType: 'Common',
@@ -383,6 +404,8 @@
                             shapeObj.min = $scope.sbData.data.options.min;
                             shapeObj.max = $scope.sbData.data.options.max;
                             shapeObj.shapes[1].style.fill = GhostService.fnGetColor($scope.sbData.data.options, $scope.sbData.data.value);
+                            shapeObj.shapes[1].min = $scope.sbData.data.options.min;
+                            shapeObj.shapes[1].max = $scope.sbData.data.options.max;
                         } else if (shapeObj.attrType === 'Icon') {
                             shapeObj.valueIcon = GhostService.fnGetIconValue($scope.sbData.data.options, $scope.sbData.data.value)
                         } else if (shapeObj.attrType === 'Range Slider') {
@@ -453,6 +476,9 @@
 
                 $scope.fnUpdateProperties = function () {
                     if ($scope.propertyObj.type === "TITLE_TEXT") {
+                        $scope.propertyObj.shapes[1].style = $scope.propertyObj.style;
+                        $scope.propertyObj.shapes[1].text = $scope.propertyObj.text;
+                    }else if($scope.propertyObj.type === "TEXT"){
                         $scope.propertyObj.shapes[1].style = $scope.propertyObj.style;
                         $scope.propertyObj.shapes[1].text = $scope.propertyObj.text;
                     }
