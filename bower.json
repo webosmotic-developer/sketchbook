@@ -29,7 +29,17 @@
       "main": [
         "dist/css/bootstrap.min.css"
       ]
-    }
+    },
+      "font-awesome": {
+          "main": [
+              "less/font-awesome.less",
+              "fonts/fontawesome-webfont.eot",
+              "fonts/fontawesome-webfont.svg",
+              "fonts/fontawesome-webfont.ttf",
+              "fonts/fontawesome-webfont.woff",
+              "fonts/fontawesome-webfont.woff2"
+          ]
+      }
   },
   "resolutions": {
     "jquery": "~2.1.4",
